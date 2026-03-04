@@ -1,13 +1,13 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
 
 export function Privacy() {
   return (
     <div className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
-      <Helmet>
-        <title>Privacy Policy | Symphosys</title>
-        <meta name="description" content="Privacy Policy for Symphosys digital agency." />
-      </Helmet>
+      <SEO
+        title="Privacy Policy | Symphosys"
+        description="Privacy Policy for Symphosys digital agency."
+      />
 
       <div className="max-w-4xl mx-auto px-6 md:px-12">
         <h1 className="font-display text-4xl md:text-6xl uppercase leading-none mb-12">

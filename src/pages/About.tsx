@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Link } from 'react-router-dom';
+import { SEO } from '../components/SEO';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,10 +44,10 @@ export function About() {
 
   return (
     <div ref={container} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg pt-32">
-      <Helmet>
-        <title>About Us | Symphosys</title>
-        <meta name="description" content="Learn about Symphosys, our mission, our team, and how we help businesses grow through unified digital marketing." />
-      </Helmet>
+      <SEO
+        title="About Us | Symphosys"
+        description="Learn about Symphosys, our mission, our team, and how we help businesses grow through unified digital marketing."
+      />
 
       {/* Hero Section */}
       <section className="px-6 md:px-12 pb-24 md:pb-32">

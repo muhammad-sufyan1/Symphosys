@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { Button } from '../components/Button';
 import { Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export function Contact() {
   const container = useRef<HTMLDivElement>(null);
@@ -83,10 +83,10 @@ export function Contact() {
 
   return (
     <div ref={container} className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
-      <Helmet>
-        <title>Contact Us | Symphosys</title>
-        <meta name="description" content="Get in touch with Symphosys to discuss your next digital project." />
-      </Helmet>
+      <SEO
+        title="Contact Us | Symphosys"
+        description="Get in touch with Symphosys to discuss your next digital project."
+      />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">

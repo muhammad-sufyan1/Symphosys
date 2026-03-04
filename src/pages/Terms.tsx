@@ -1,13 +1,13 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
 
 export function Terms() {
   return (
     <div className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
-      <Helmet>
-        <title>Terms & Conditions | Symphosys</title>
-        <meta name="description" content="Terms and conditions for using Symphosys services and website." />
-      </Helmet>
+      <SEO
+        title="Terms & Conditions | Symphosys"
+        description="Terms and conditions for using Symphosys services and website."
+      />
 
       <div className="max-w-4xl mx-auto px-6 md:px-12">
         <h1 className="font-display text-4xl md:text-6xl uppercase leading-none mb-12">

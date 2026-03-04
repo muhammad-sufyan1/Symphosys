@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { servicesData } from '../data/services';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
@@ -8,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, Plus, Minus, ArrowDown } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Button } from '../components/Button';
+import { SEO } from '../components/SEO';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -128,10 +128,7 @@ export default function ServicePage() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg">
-      <Helmet>
-        <title>{service.metaTitle}</title>
-        <meta name="description" content={service.metaDescription} />
-      </Helmet>
+      <SEO title={service.metaTitle} description={service.metaDescription} />
 
       {/* 1. CREATIVE HERO - HOME PAGE STYLE */}
       <section className="hero-section relative min-h-[100svh] pt-32 md:pt-40 pb-32 flex flex-col justify-center overflow-hidden px-6 md:px-12 bg-bg">
