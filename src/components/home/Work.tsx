@@ -18,6 +18,16 @@ interface WorkVideosPayload {
 }
 
 const PAGE_SIZE = 24;
+const IFRAME_LOAD_TIMEOUT_MS = 9000;
+
+function buildDriveStreamCandidates(videoId: string) {
+  const id = encodeURIComponent(videoId);
+  return [
+    `https://drive.google.com/uc?export=download&id=${id}`,
+    `https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`,
+    `https://drive.google.com/uc?export=view&id=${id}`,
+  ];
+}
 
 function parseWorkVideos(payload: unknown): WorkVideo[] {
   let items: unknown[] = [];
@@ -74,6 +84,10 @@ export function Work() {
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [selectedVideo, setSelectedVideo] = useState<WorkVideo | null>(null);
+  const [playerMode, setPlayerMode] = useState<'native' | 'iframe'>('native');
+  const [streamCandidateIndex, setStreamCandidateIndex] = useState(0);
+  const [isNativeReady, setIsNativeReady] = useState(false);
+  const [iframeTimedOut, setIframeTimedOut] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -136,6 +150,39 @@ export function Work() {
     };
   }, [selectedVideo]);
 
+  useEffect(() => {
+    if (!selectedVideo) {
+      return;
+    }
+
+    setPlayerMode('native');
+    setStreamCandidateIndex(0);
+    setIsNativeReady(false);
+    setIframeTimedOut(false);
+  }, [selectedVideo]);
+
+  useEffect(() => {
+    if (playerMode !== 'native') {
+      return;
+    }
+    setIsNativeReady(false);
+  }, [playerMode, streamCandidateIndex, selectedVideo?.id]);
+
+  useEffect(() => {
+    if (playerMode !== 'iframe' || !selectedVideo) {
+      return;
+    }
+
+    setIframeTimedOut(false);
+    const timeoutId = window.setTimeout(() => {
+      setIframeTimedOut(true);
+    }, IFRAME_LOAD_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [playerMode, selectedVideo]);
+
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
     for (const video of videos) {
@@ -171,6 +218,28 @@ export function Work() {
   );
 
   const hasMore = visibleCount < filteredVideos.length;
+  const streamCandidates = useMemo(
+    () => (selectedVideo ? buildDriveStreamCandidates(selectedVideo.id) : []),
+    [selectedVideo],
+  );
+  const activeStreamUrl = streamCandidates[streamCandidateIndex] || '';
+  const previewSrc = selectedVideo
+    ? `${selectedVideo.previewUrl}${selectedVideo.previewUrl.includes('?') ? '&' : '?'}autoplay=1`
+    : '';
+
+  const resetNativePlayer = () => {
+    setPlayerMode('native');
+    setStreamCandidateIndex(0);
+    setIsNativeReady(false);
+  };
+
+  const handleNativePlaybackError = () => {
+    if (streamCandidateIndex < streamCandidates.length - 1) {
+      setStreamCandidateIndex((previous) => previous + 1);
+      return;
+    }
+    setPlayerMode('iframe');
+  };
 
   return (
     <>
@@ -364,15 +433,86 @@ export function Work() {
             </div>
 
             <div className="rounded-3xl overflow-hidden border border-white/15 bg-black">
-              <div className="aspect-video">
-                <iframe
-                  title={selectedVideo.title}
-                  src={`${selectedVideo.previewUrl}?autoplay=1`}
-                  className="w-full h-full"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  allowFullScreen
-                />
+              <div className="aspect-video relative">
+                {playerMode === 'native' ? (
+                  <>
+                    <video
+                      key={activeStreamUrl}
+                      src={activeStreamUrl}
+                      poster={selectedVideo.thumbnailUrl}
+                      className="w-full h-full object-contain bg-black"
+                      controls
+                      playsInline
+                      autoPlay
+                      preload="metadata"
+                      onCanPlay={() => setIsNativeReady(true)}
+                      onLoadedData={() => setIsNativeReady(true)}
+                      onError={handleNativePlaybackError}
+                    />
+                    {!isNativeReady ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-bg/80 pointer-events-none">
+                        <span className="w-10 h-10 rounded-full border-2 border-bg/40 border-t-bg animate-spin" />
+                        <p className="text-xs md:text-sm uppercase tracking-[0.14em] font-semibold">
+                          Loading Video Player...
+                        </p>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <iframe
+                      title={selectedVideo.title}
+                      src={previewSrc}
+                      className="w-full h-full"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    />
+                    {iframeTimedOut ? (
+                      <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-amber-300/40 bg-amber-500/20 backdrop-blur-sm p-4 text-amber-100">
+                        <p className="text-xs md:text-sm font-semibold uppercase tracking-[0.12em]">
+                          Google Drive player is still loading.
+                        </p>
+                        <p className="text-xs md:text-sm text-amber-100/85 mt-1">
+                          This can happen when Drive blocks embeds or third-party cookies are restricted.
+                        </p>
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm">
+              {playerMode === 'native' ? (
+                <button
+                  type="button"
+                  onClick={() => setPlayerMode('iframe')}
+                  className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
+                >
+                  Try Drive Player
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={resetNativePlayer}
+                  className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
+                >
+                  Try Native Player
+                </button>
+              )}
+
+              <a
+                href={selectedVideo.viewUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
+              >
+                Open in Drive
+              </a>
+
+              <p className="text-bg/60 font-medium">
+                Source {Math.min(streamCandidateIndex + 1, streamCandidates.length)} of {streamCandidates.length}
+              </p>
             </div>
           </div>
         </div>
