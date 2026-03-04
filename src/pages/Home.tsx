@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Hero } from '../components/home/Hero';
 import { WhatWeDo } from '../components/home/WhatWeDo';
 import { WhyUs } from '../components/home/WhyUs';
@@ -10,6 +11,14 @@ import { CTA } from '../components/home/CTA';
 import { SEO } from '../components/SEO';
 
 export function Home() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (window.location.hash.toLowerCase() === '#work') {
+      navigate('/work', { replace: true });
+    }
+  }, [navigate]);
+
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
