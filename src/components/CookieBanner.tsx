@@ -20,7 +20,7 @@ export function CookieBanner() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-[400px] bg-ink text-bg p-6 rounded-2xl shadow-2xl z-50 border border-bg/10 flex flex-col gap-4">
+    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-400px bg-ink text-bg p-6 rounded-2xl shadow-2xl z-50 border border-bg/10 flex flex-col gap-4">
       <div className="flex items-start justify-between">
         <h3 className="font-display text-xl uppercase tracking-wide">Cookie Consent</h3>
       </div>
