@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import {
   CalendarClock,
   ChevronLeft,
@@ -119,6 +121,14 @@ async function safeJson<T>(response: Response): Promise<T | null> {
 }
 
 export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
+  const backdropRef = useRef<HTMLButtonElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const monthLabelRef = useRef<HTMLParagraphElement>(null);
+  const calendarGridRef = useRef<HTMLDivElement>(null);
+  const slotGridRef = useRef<HTMLDivElement>(null);
+  const successCardRef = useRef<HTMLDivElement>(null);
+
   const [availability, setAvailability] = useState<BookingAvailability | null>(null);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
@@ -312,6 +322,120 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
   const canGoToNextMonth =
     activeMonthIndex >= 0 && activeMonthIndex < availableMonthKeys.length - 1;
 
+  useGSAP(
+    () => {
+      if (!isOpen) {
+        return;
+      }
+
+      const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      if (backdropRef.current) {
+        timeline.fromTo(
+          backdropRef.current,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.35 },
+        );
+      }
+
+      if (modalRef.current) {
+        timeline.fromTo(
+          modalRef.current,
+          { opacity: 0, y: 28, scale: 0.96, rotateX: -8, transformOrigin: '50% 0%' },
+          { opacity: 1, y: 0, scale: 1, rotateX: 0, duration: 0.5 },
+          0,
+        );
+      }
+
+      if (contentRef.current) {
+        timeline.fromTo(
+          contentRef.current.querySelectorAll('[data-booking-stagger="true"]'),
+          { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: 0.35, stagger: 0.06 },
+          0.14,
+        );
+      }
+    },
+    { dependencies: [isOpen], scope: modalRef },
+  );
+
+  useGSAP(
+    () => {
+      if (!isOpen || !calendarGridRef.current) {
+        return;
+      }
+
+      const cells = calendarGridRef.current.querySelectorAll('.booking-calendar-cell');
+      gsap.fromTo(
+        cells,
+        { opacity: 0, y: 12, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.32, stagger: 0.01, ease: 'power2.out' },
+      );
+
+      if (monthLabelRef.current) {
+        gsap.fromTo(
+          monthLabelRef.current,
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' },
+        );
+      }
+    },
+    { dependencies: [activeMonthKey], scope: calendarGridRef },
+  );
+
+  useGSAP(
+    () => {
+      if (!isOpen || !slotGridRef.current) {
+        return;
+      }
+
+      const slots = slotGridRef.current.querySelectorAll('.booking-slot-pill');
+      gsap.fromTo(
+        slots,
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.25, stagger: 0.035, ease: 'power2.out' },
+      );
+    },
+    { dependencies: [selectedDate], scope: slotGridRef },
+  );
+
+  useGSAP(
+    () => {
+      if (!successBooking || !successCardRef.current) {
+        return;
+      }
+
+      const card = successCardRef.current;
+      const dots = card.querySelectorAll('.booking-success-dot');
+
+      const intro = gsap.timeline();
+      intro.fromTo(
+        card,
+        { opacity: 0, y: 18, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' },
+      );
+      intro.fromTo(
+        dots,
+        { opacity: 0, scale: 0.5 },
+        { opacity: 0.8, scale: 1, duration: 0.28, stagger: 0.06, ease: 'back.out(2)' },
+        0.1,
+      );
+
+      const ambient = gsap.timeline({ repeat: -1, yoyo: true });
+      ambient
+        .to('.booking-success-dot-1', { x: 8, y: -9, duration: 1.8, ease: 'sine.inOut' }, 0)
+        .to('.booking-success-dot-2', { x: -6, y: -7, duration: 2.1, ease: 'sine.inOut' }, 0)
+        .to('.booking-success-dot-3', { x: 9, y: 6, duration: 1.7, ease: 'sine.inOut' }, 0)
+        .to('.booking-success-dot-4', { x: -7, y: 8, duration: 2.2, ease: 'sine.inOut' }, 0);
+
+      return () => {
+        intro.kill();
+        ambient.kill();
+      };
+    },
+    { dependencies: [successBooking], scope: successCardRef },
+  );
+
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -422,13 +546,20 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
     <div className="fixed inset-0 z-[120] p-4 md:p-8 flex items-start justify-center">
       <button
         type="button"
+        ref={backdropRef}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onClose}
         aria-label="Close booking modal"
       />
 
-      <div className="relative z-10 w-full max-w-5xl max-h-[92svh] bg-bg text-ink rounded-3xl border border-ink/10 shadow-[0_32px_80px_rgba(0,0,0,0.35)] overflow-hidden">
-        <div className="flex items-center justify-between border-b border-ink/10 px-6 py-5 md:px-8">
+      <div
+        ref={modalRef}
+        className="relative z-10 w-full max-w-5xl max-h-[92svh] bg-bg text-ink rounded-3xl border border-ink/10 shadow-[0_32px_80px_rgba(0,0,0,0.35)] overflow-hidden"
+      >
+        <div
+          className="flex items-center justify-between border-b border-ink/10 px-6 py-5 md:px-8"
+          data-booking-stagger="true"
+        >
           <div>
             <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-ink/50">Book A Call</p>
             <h2 className="font-display text-3xl uppercase mt-1">Strategy Session</h2>
@@ -443,9 +574,19 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
           </button>
         </div>
 
-        <div className="max-h-[calc(92svh-96px)] overflow-y-auto p-6 md:p-8">
+        <div
+          ref={contentRef}
+          className="max-h-[calc(92svh-96px)] overflow-y-auto p-6 md:p-8"
+        >
           {successBooking ? (
-            <div className="max-w-2xl mx-auto rounded-3xl border border-accent/30 bg-accent/5 p-8">
+            <div
+              ref={successCardRef}
+              className="max-w-2xl mx-auto rounded-3xl border border-accent/30 bg-accent/5 p-8 relative overflow-hidden"
+            >
+              <span className="booking-success-dot booking-success-dot-1 absolute top-6 right-8 w-2 h-2 rounded-full bg-accent/60" />
+              <span className="booking-success-dot booking-success-dot-2 absolute top-14 left-10 w-3 h-3 rounded-full bg-ink/20" />
+              <span className="booking-success-dot booking-success-dot-3 absolute bottom-8 right-14 w-2 h-2 rounded-full bg-accent/50" />
+              <span className="booking-success-dot booking-success-dot-4 absolute bottom-12 left-16 w-1.5 h-1.5 rounded-full bg-ink/25" />
               <div className="flex items-center gap-3 mb-5 text-accent">
                 <CircleCheckBig size={24} />
                 <h3 className="font-display text-2xl uppercase">Booking Confirmed</h3>
@@ -488,7 +629,10 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <section className="rounded-3xl border border-ink/10 bg-surface p-6">
+              <section
+                className="rounded-3xl border border-ink/10 bg-surface p-6"
+                data-booking-stagger="true"
+              >
                 <div className="flex items-center gap-2 mb-4">
                   <CalendarClock size={18} className="text-accent" />
                   <h3 className="font-display text-xl uppercase">Pick Date & Time</h3>
@@ -533,7 +677,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                               <ChevronLeft size={16} />
                             </button>
 
-                            <p className="font-display text-lg uppercase">{monthLabel}</p>
+                            <p ref={monthLabelRef} className="font-display text-lg uppercase">{monthLabel}</p>
 
                             <button
                               type="button"
@@ -561,7 +705,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                             ))}
                           </div>
 
-                          <div className="grid grid-cols-7 gap-1">
+                          <div ref={calendarGridRef} className="grid grid-cols-7 gap-1">
                             {calendarCells.map((cell, index) => {
                               if (cell.kind === 'empty') {
                                 return <div key={`empty-${index}`} className="aspect-square" />;
@@ -576,7 +720,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                                   type="button"
                                   onClick={() => handleDateSelection(cell.dateKey)}
                                   disabled={!isAvailable}
-                                  className={`aspect-square rounded-lg border px-1 py-1 text-xs md:text-sm font-semibold transition-colors flex flex-col items-center justify-center ${
+                                  className={`booking-calendar-cell aspect-square rounded-lg border px-1 py-1 text-xs md:text-sm font-semibold transition-colors flex flex-col items-center justify-center ${
                                     isActive
                                       ? 'bg-ink text-bg border-ink'
                                       : isAvailable
@@ -602,7 +746,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                             {selectedDay ? `Available Slots • ${selectedDay.label}` : 'Available Slots'}
                           </p>
                           {selectedDay && selectedDay.slots.length > 0 ? (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <div ref={slotGridRef} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                               {selectedDay.slots.map((slot) => {
                                 const isActive = slot.startIso === selectedStartIso;
                                 return (
@@ -610,7 +754,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                                     key={slot.startIso}
                                     type="button"
                                     onClick={() => setSelectedStartIso(slot.startIso)}
-                                    className={`rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
+                                    className={`booking-slot-pill rounded-xl border px-3 py-2 text-sm font-semibold transition-colors ${
                                       isActive
                                         ? 'bg-accent text-white border-accent'
                                         : 'bg-bg border-ink/15 text-ink/70 hover:border-accent/35 hover:text-accent'
@@ -633,7 +777,10 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                 ) : null}
               </section>
 
-              <section className="rounded-3xl border border-ink/10 bg-surface p-6">
+              <section
+                className="rounded-3xl border border-ink/10 bg-surface p-6"
+                data-booking-stagger="true"
+              >
                 <div className="flex items-center gap-2 mb-4">
                   <Clock3 size={18} className="text-accent" />
                   <h3 className="font-display text-xl uppercase">Your Details</h3>
