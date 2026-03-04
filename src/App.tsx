@@ -12,6 +12,7 @@ import { Footer } from './components/Footer';
 import { CookieBanner } from './components/CookieBanner';
 import { BookingModalProvider } from './contexts/BookingModalContext';
 import { AmbientBackground } from './components/AmbientBackground';
+import { ConsultationCtaBox } from './components/ConsultationCtaBox';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
                 <Route path="/privacy" element={<Privacy />} />
               </Routes>
             </main>
+            <ConsultationCtaBox />
             <Footer />
             <CookieBanner />
             <Analytics />
