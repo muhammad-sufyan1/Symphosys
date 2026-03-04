@@ -23,9 +23,9 @@ const IFRAME_LOAD_TIMEOUT_MS = 9000;
 function buildDriveStreamCandidates(videoId: string) {
   const id = encodeURIComponent(videoId);
   return [
-    `https://drive.google.com/uc?export=download&id=${id}`,
     `https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`,
-    `https://drive.google.com/uc?export=view&id=${id}`,
+    `https://drive.google.com/uc?export=download&confirm=t&id=${id}`,
+    `https://drive.usercontent.google.com/uc?id=${id}&export=download`,
   ];
 }
 
@@ -441,6 +441,7 @@ export function Work() {
                       src={activeStreamUrl}
                       poster={selectedVideo.thumbnailUrl}
                       className="w-full h-full object-contain bg-black"
+                      crossOrigin="anonymous"
                       controls
                       playsInline
                       autoPlay
