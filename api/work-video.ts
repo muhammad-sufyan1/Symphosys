@@ -10,7 +10,6 @@ const PASSTHROUGH_HEADERS = [
   'cache-control',
   'etag',
   'last-modified',
-  'content-disposition',
 ];
 
 type CacheEntry = {
@@ -82,6 +81,13 @@ function setCachedResolvedUrl(fileId: string, url: string): void {
     url,
     expiresAt: Date.now() + RESOLVE_CACHE_TTL_MS,
   });
+}
+
+function getInlineContentDisposition(fileId: string, upstreamHeader: string | null): string {
+  const filenameMatch = upstreamHeader?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+  const rawFilename = filenameMatch?.[1] || `${fileId}.mp4`;
+  const sanitized = rawFilename.trim().replaceAll('"', '');
+  return `inline; filename="${sanitized}"`;
 }
 
 async function resolveDriveDownloadUrl(fileId: string, forceRefresh = false): Promise<string> {
@@ -175,6 +181,7 @@ export default async function handler(req: any, res: any) {
 
     res.statusCode = upstream.status;
     res.setHeader('x-video-proxy', 'drive');
+    res.setHeader('access-control-allow-origin', '*');
 
     for (const header of PASSTHROUGH_HEADERS) {
       const value = upstream.headers.get(header);
@@ -182,6 +189,11 @@ export default async function handler(req: any, res: any) {
         res.setHeader(header, value);
       }
     }
+
+    res.setHeader(
+      'content-disposition',
+      getInlineContentDisposition(fileId, upstream.headers.get('content-disposition')),
+    );
 
     if (req.method === 'HEAD' || !upstream.body) {
       return res.end();
