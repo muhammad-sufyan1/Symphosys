@@ -9,6 +9,7 @@ import { Results } from '../components/home/Results';
 import { FAQ, faqs } from '../components/home/FAQ';
 import { CTA } from '../components/home/CTA';
 import { SEO } from '../components/SEO';
+import { ConsultationCtaBox } from '../components/ConsultationCtaBox';
 
 export function Home() {
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ export function Home() {
       <WhatWeDo />
       <WhyUs />
       <Process />
+      <ConsultationCtaBox />
       <Industries />
       <Results />
       <FAQ />

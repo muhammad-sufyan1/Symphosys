@@ -9,6 +9,7 @@ import { cn } from '../utils/cn';
 import { Button } from '../components/Button';
 import { SEO } from '../components/SEO';
 import { useBookingModal } from '../contexts/BookingModalContext';
+import { ConsultationCtaBox } from '../components/ConsultationCtaBox';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -257,6 +258,8 @@ export default function ServicePage() {
           </div>
         </div>
       </section>
+
+      <ConsultationCtaBox />
 
       {/* 3. STICKY PROCESS TIMELINE */}
       <section className="py-32 px-6 md:px-12 relative bg-bg text-ink">

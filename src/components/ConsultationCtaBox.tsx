@@ -115,8 +115,8 @@ export function ConsultationCtaBox() {
     <section ref={sectionRef} className="relative px-6 md:px-12 py-20 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto flex justify-center">
         <div className="consultation-cta-shell relative w-full max-w-5xl">
-          <div className="absolute inset-0 rounded-[36px] bg-[linear-gradient(140deg,rgba(255,87,34,0.7),rgba(28,27,23,0.72),rgba(255,87,34,0.45))] p-[1px] shadow-[0_30px_80px_rgba(0,0,0,0.23)]">
-            <div className="relative h-full w-full rounded-[35px] bg-ink text-bg overflow-hidden">
+          <div className="rounded-[36px] bg-[linear-gradient(140deg,rgba(255,87,34,0.7),rgba(28,27,23,0.72),rgba(255,87,34,0.45))] p-[1px] shadow-[0_30px_80px_rgba(0,0,0,0.23)]">
+            <div className="relative rounded-[35px] bg-ink text-bg overflow-hidden">
               <div className="consultation-beam absolute -top-[38%] left-[36%] h-[180%] w-[30%] rotate-[18deg] bg-gradient-to-b from-accent/45 via-accent/10 to-transparent blur-[34px] opacity-25" />
 
               <div className="absolute inset-0 opacity-[0.22] [mask-image:radial-gradient(circle_at_50%_42%,black,transparent_80%)]">
