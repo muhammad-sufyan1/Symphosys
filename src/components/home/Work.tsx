@@ -23,6 +23,7 @@ const IFRAME_LOAD_TIMEOUT_MS = 9000;
 function buildDriveStreamCandidates(videoId: string) {
   const id = encodeURIComponent(videoId);
   return [
+    `/api/work-video?id=${id}`,
     `https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`,
     `https://drive.google.com/uc?export=download&confirm=t&id=${id}`,
     `https://drive.usercontent.google.com/uc?id=${id}&export=download`,

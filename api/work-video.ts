@@ -1,0 +1,196 @@
+import { Readable } from 'node:stream';
+
+const DRIVE_ID_PATTERN = /^[A-Za-z0-9_-]{10,}$/;
+const RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
+const PASSTHROUGH_HEADERS = [
+  'content-type',
+  'content-length',
+  'content-range',
+  'accept-ranges',
+  'cache-control',
+  'etag',
+  'last-modified',
+  'content-disposition',
+];
+
+type CacheEntry = {
+  url: string;
+  expiresAt: number;
+};
+
+const resolvedUrlCache = new Map<string, CacheEntry>();
+
+function getQueryValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    return typeof value[0] === 'string' ? value[0] : '';
+  }
+  return typeof value === 'string' ? value : '';
+}
+
+function decodeHtml(input: string): string {
+  return input
+    .replaceAll('&amp;', '&')
+    .replaceAll('&lt;', '<')
+    .replaceAll('&gt;', '>')
+    .replaceAll('&#39;', "'")
+    .replaceAll('&quot;', '"');
+}
+
+function buildDefaultDownloadUrl(fileId: string): string {
+  const params = new URLSearchParams({
+    id: fileId,
+    export: 'download',
+    confirm: 't',
+  });
+  return `https://drive.usercontent.google.com/download?${params.toString()}`;
+}
+
+function extractDownloadUrlFromWarningPage(html: string, fileId: string): string {
+  const actionMatch = html.match(/<form[^>]+action="([^"]+)"/i);
+  const confirmMatch = html.match(/name="confirm"\s+value="([^"]+)"/i);
+  const uuidMatch = html.match(/name="uuid"\s+value="([^"]+)"/i);
+  const exportMatch = html.match(/name="export"\s+value="([^"]+)"/i);
+
+  const action = actionMatch ? decodeHtml(actionMatch[1]) : 'https://drive.usercontent.google.com/download';
+  const params = new URLSearchParams({
+    id: fileId,
+    export: exportMatch ? decodeHtml(exportMatch[1]) : 'download',
+    confirm: confirmMatch ? decodeHtml(confirmMatch[1]) : 't',
+  });
+
+  if (uuidMatch) {
+    params.set('uuid', decodeHtml(uuidMatch[1]));
+  }
+
+  return `${action}?${params.toString()}`;
+}
+
+function getCachedResolvedUrl(fileId: string): string | null {
+  const cached = resolvedUrlCache.get(fileId);
+  if (!cached) {
+    return null;
+  }
+  if (Date.now() >= cached.expiresAt) {
+    resolvedUrlCache.delete(fileId);
+    return null;
+  }
+  return cached.url;
+}
+
+function setCachedResolvedUrl(fileId: string, url: string): void {
+  resolvedUrlCache.set(fileId, {
+    url,
+    expiresAt: Date.now() + RESOLVE_CACHE_TTL_MS,
+  });
+}
+
+async function resolveDriveDownloadUrl(fileId: string, forceRefresh = false): Promise<string> {
+  if (!forceRefresh) {
+    const cached = getCachedResolvedUrl(fileId);
+    if (cached) {
+      return cached;
+    }
+  }
+
+  const initialUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+  const probeResponse = await fetch(initialUrl, {
+    method: 'GET',
+    redirect: 'follow',
+    headers: {
+      Range: 'bytes=0-0',
+      'User-Agent': 'Mozilla/5.0',
+    },
+  });
+
+  const contentType = (probeResponse.headers.get('content-type') || '').toLowerCase();
+  let resolvedUrl = '';
+
+  if (contentType.startsWith('video/')) {
+    resolvedUrl = probeResponse.url || buildDefaultDownloadUrl(fileId);
+  } else if (contentType.includes('text/html')) {
+    const html = await probeResponse.text();
+    resolvedUrl = extractDownloadUrlFromWarningPage(html, fileId);
+  } else {
+    resolvedUrl = buildDefaultDownloadUrl(fileId);
+  }
+
+  setCachedResolvedUrl(fileId, resolvedUrl);
+  return resolvedUrl;
+}
+
+async function fetchDriveVideoResponse(fileId: string, rangeHeader: string | null): Promise<Response> {
+  let targetUrl = await resolveDriveDownloadUrl(fileId);
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const upstream = await fetch(targetUrl, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        ...(rangeHeader ? { Range: rangeHeader } : {}),
+        'User-Agent': 'Mozilla/5.0',
+      },
+    });
+
+    const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('text/html')) {
+      return upstream;
+    }
+
+    resolvedUrlCache.delete(fileId);
+    targetUrl = await resolveDriveDownloadUrl(fileId, true);
+  }
+
+  return fetch(targetUrl, {
+    method: 'GET',
+    redirect: 'follow',
+    headers: {
+      ...(rangeHeader ? { Range: rangeHeader } : {}),
+      'User-Agent': 'Mozilla/5.0',
+    },
+  });
+}
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD');
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const fileId = getQueryValue(req?.query?.id).trim();
+  if (!fileId || !DRIVE_ID_PATTERN.test(fileId)) {
+    return res.status(400).json({ error: 'Missing or invalid Google Drive file id.' });
+  }
+
+  const rangeHeader = typeof req?.headers?.range === 'string' ? req.headers.range : null;
+
+  try {
+    const upstream = await fetchDriveVideoResponse(fileId, rangeHeader);
+    const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
+
+    if (contentType.includes('text/html')) {
+      return res.status(502).json({
+        error: 'Drive returned a non-streamable response for this video.',
+      });
+    }
+
+    res.statusCode = upstream.status;
+    res.setHeader('x-video-proxy', 'drive');
+
+    for (const header of PASSTHROUGH_HEADERS) {
+      const value = upstream.headers.get(header);
+      if (value) {
+        res.setHeader(header, value);
+      }
+    }
+
+    if (req.method === 'HEAD' || !upstream.body) {
+      return res.end();
+    }
+
+    Readable.fromWeb(upstream.body as any).pipe(res);
+    return;
+  } catch (error) {
+    console.error('Work video proxy error:', error);
+    return res.status(500).json({ error: 'Unable to stream this video right now.' });
+  }
+}
