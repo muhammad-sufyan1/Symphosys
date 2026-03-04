@@ -1,10 +1,40 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 
 export function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const footerRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      if (!footerRef.current) {
+        return;
+      }
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      const shapeOne = footerRef.current.querySelector('[data-footer-ambient="shape-1"]');
+      const shapeTwo = footerRef.current.querySelector('[data-footer-ambient="shape-2"]');
+      const bgLogo = footerRef.current.querySelector('[data-footer-ambient="logo"]');
+
+      const timeline = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: 'sine.inOut' } });
+      timeline
+        .to(shapeOne, { xPercent: 8, yPercent: -7, scale: 1.07, duration: 10 }, 0)
+        .to(shapeTwo, { xPercent: -6, yPercent: 9, scale: 1.1, duration: 12 }, 0)
+        .to(bgLogo, { yPercent: 4, xPercent: -1.5, duration: 14 }, 0);
+
+      return () => {
+        timeline.kill();
+      };
+    },
+    { scope: footerRef },
+  );
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,16 +62,17 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-accent text-white pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
+    <footer ref={footerRef} className="bg-accent text-white pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
       {/* Abstract background shapes */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
-        <div className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-white blur-3xl"></div>
-        <div className="absolute -bottom-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-ink blur-3xl"></div>
+        <div data-footer-ambient="shape-1" className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-white blur-3xl"></div>
+        <div data-footer-ambient="shape-2" className="absolute -bottom-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-ink blur-3xl"></div>
       </div>
 
       {/* Large Background Logo */}
       <div className="absolute bottom-0 left-0 w-full h-1/2 pointer-events-none flex justify-center items-end opacity-20 mix-blend-overlay">
         <img 
+          data-footer-ambient="logo"
           src="/logo.svg" 
           alt="Symphosys Logo Background" 
           className="w-full h-full object-cover object-bottom brightness-0 invert translate-y-[25%]" 
