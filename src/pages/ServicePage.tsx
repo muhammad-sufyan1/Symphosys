@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { servicesData } from '../data/services';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, Plus, Minus, ArrowDown } from 'lucide-react';
+import { ArrowRight, Plus, Minus } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Button } from '../components/Button';
 import { SEO } from '../components/SEO';
 import { useBookingModal } from '../contexts/BookingModalContext';
 import { ConsultationCtaBox } from '../components/ConsultationCtaBox';
+import { NotFound } from './NotFound';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -126,12 +127,77 @@ export default function ServicePage() {
   }, { scope: containerRef, dependencies: [service] });
 
   if (!service) {
-    return <Navigate to="/" replace />;
+    return <NotFound />;
   }
+
+  const serviceName = service.slug.replace(/-/g, ' ');
+  const formattedServiceName = serviceName.replace(/\b\w/g, (char) => char.toUpperCase());
+  const normalizedMetaDescription = service.metaDescription.replace(/\s+/g, ' ').trim();
+  const seoTitle =
+    service.metaTitle.length > 60 ? `${formattedServiceName} Services | Symphosys` : service.metaTitle;
+  const seoDescription =
+    normalizedMetaDescription.length > 157
+      ? `${normalizedMetaDescription.slice(0, 157).trimEnd()}...`
+      : normalizedMetaDescription;
+
+  const serviceSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `${formattedServiceName} Services`,
+    description: seoDescription,
+    serviceType: serviceName,
+    areaServed: 'United States',
+    url: `https://symphosys.com/services/${service.slug}`,
+    provider: {
+      '@type': 'Organization',
+      name: 'Symphosys',
+      url: 'https://symphosys.com',
+    },
+  };
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: service.faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: 'https://symphosys.com/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: `${formattedServiceName} Services`,
+        item: `https://symphosys.com/services/${service.slug}`,
+      },
+    ],
+  };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg">
-      <SEO title={service.metaTitle} description={service.metaDescription} />
+      <SEO
+        title={seoTitle || service.metaTitle}
+        description={seoDescription}
+        keywords={service.focusKeywords}
+        canonicalPath={`/services/${service.slug}`}
+        image="/logo.png"
+        type="article"
+        structuredData={[serviceSchema, faqSchema, breadcrumbSchema]}
+      />
 
       {/* 1. CREATIVE HERO - HOME PAGE STYLE */}
       <section className="hero-section relative min-h-[100svh] pt-32 md:pt-40 pb-32 flex flex-col justify-center overflow-hidden px-6 md:px-12 bg-bg">

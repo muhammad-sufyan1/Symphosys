@@ -146,9 +146,9 @@ export function Footer() {
         <div className="border-t-2 border-white/20 pt-8 flex flex-col md:flex-row items-center justify-between font-medium text-white/80">
           <p>&copy; {new Date().getFullYear()} Symphosys Digital Agency. All rights reserved.</p>
           <div className="flex gap-8 mt-6 md:mt-0">
-            <Link to="#" className="hover:text-ink transition-colors">Twitter</Link>
-            <Link to="#" className="hover:text-ink transition-colors">LinkedIn</Link>
-            <Link to="#" className="hover:text-ink transition-colors">Instagram</Link>
+            <Link to="/work" className="hover:text-ink transition-colors">Work Portfolio</Link>
+            <Link to="/contact" className="hover:text-ink transition-colors">Book Strategy Call</Link>
+            <Link to="/about" className="hover:text-ink transition-colors">Our Process</Link>
           </div>
         </div>
       </div>

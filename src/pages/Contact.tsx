@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { Button } from '../components/Button';
-import { Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import { SEO } from '../components/SEO';
 
 export function Contact() {
@@ -85,7 +85,17 @@ export function Contact() {
     <div ref={container} className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
       <SEO
         title="Contact Us | Symphosys"
-        description="Get in touch with Symphosys to discuss your next digital project."
+        description="Contact Symphosys to discuss web development, digital marketing, branding, and growth strategy for your business."
+        canonicalPath="/contact"
+        image="/logo.png"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'ContactPage',
+          name: 'Contact Symphosys',
+          url: 'https://symphosys.com/contact',
+          description:
+            'Contact Symphosys to discuss web development, digital marketing, branding, and growth strategy for your business.',
+        }}
       />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12">

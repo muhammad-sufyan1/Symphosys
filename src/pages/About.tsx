@@ -46,7 +46,17 @@ export function About() {
     <div ref={container} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg pt-32">
       <SEO
         title="About Us | Symphosys"
-        description="Learn about Symphosys, our mission, our team, and how we help businesses grow through unified digital marketing."
+        description="Learn how Symphosys builds integrated growth systems through strategy, creative execution, and performance marketing."
+        canonicalPath="/about"
+        image="/logo.png"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'AboutPage',
+          name: 'About Symphosys',
+          url: 'https://symphosys.com/about',
+          description:
+            'Learn how Symphosys builds integrated growth systems through strategy, creative execution, and performance marketing.',
+        }}
       />
 
       {/* Hero Section */}

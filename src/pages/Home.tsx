@@ -39,6 +39,9 @@ export function Home() {
         title="Symphosys | Full-Service Digital Agency"
         description="We help businesses grow online through custom web design, digital marketing, graphic design, video production, and lead generation."
         keywords="full-service digital agency, digital marketing agency, online marketing services"
+        canonicalPath="/"
+        image="/logo.png"
+        type="website"
         structuredData={[
           {
             '@context': 'https://schema.org',
@@ -47,6 +50,12 @@ export function Home() {
             url: 'https://symphosys.com',
             logo: 'https://symphosys.com/logo.png',
             description: 'Full-service digital agency helping businesses grow online.',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'Symphosys',
+            url: 'https://symphosys.com',
           },
           faqSchema,
         ]}

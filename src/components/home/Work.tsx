@@ -663,7 +663,7 @@ export function Work() {
               <a
                 href={selectedVideo.viewUrl}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
               >
                 Open in Drive

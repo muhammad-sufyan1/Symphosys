@@ -5,8 +5,21 @@
       "handle": "filesystem"
     },
     {
-      "src": "/(.*)",
+      "src": "/$",
       "dest": "/index.html"
+    },
+    {
+      "src": "/(about|contact|work|terms|privacy)$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/services/(web-development|shopify-store-design|graphic-design|video-editing|video-animations|growth-marketing|lead-generation|brand-building|digital-marketing|creative-ads)$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "status": 404,
+      "dest": "/404.html"
     }
   ]
 }

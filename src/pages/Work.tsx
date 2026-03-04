@@ -7,7 +7,16 @@ export function WorkPage() {
     <>
       <SEO
         title="Our Work | Symphosys"
-        description="Explore our full video portfolio by category and watch project work directly on-site."
+        description="Explore Symphosys case work, campaign creative, and production examples across industries."
+        canonicalPath="/work"
+        image="/logo.png"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Symphosys Work Portfolio',
+          url: 'https://symphosys.com/work',
+          description: 'Explore Symphosys case work, campaign creative, and production examples across industries.',
+        }}
       />
       <Work />
     </>

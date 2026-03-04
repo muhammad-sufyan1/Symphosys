@@ -1,12 +1,24 @@
 import React from 'react';
 import { SEO } from '../components/SEO';
 
+const LAST_UPDATED = 'March 4, 2026';
+
 export function Privacy() {
   return (
     <div className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
       <SEO
         title="Privacy Policy | Symphosys"
-        description="Privacy Policy for Symphosys digital agency."
+        description="Read the Symphosys privacy policy covering personal data collection, usage, retention, and contact details."
+        canonicalPath="/privacy"
+        image="/logo.png"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Privacy Policy | Symphosys',
+          url: 'https://symphosys.com/privacy',
+          description:
+            'Read the Symphosys privacy policy covering personal data collection, usage, retention, and contact details.',
+        }}
       />
 
       <div className="max-w-4xl mx-auto px-6 md:px-12">
@@ -15,7 +27,7 @@ export function Privacy() {
         </h1>
         
         <div className="prose prose-lg prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wide prose-a:text-accent hover:prose-a:text-ink max-w-none text-ink/80">
-          <p className="font-medium text-xl mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="font-medium text-xl mb-8">Last updated: {LAST_UPDATED}</p>
           
           <h2 className="text-2xl mt-12 mb-4 text-ink">1. Introduction</h2>
           <p>

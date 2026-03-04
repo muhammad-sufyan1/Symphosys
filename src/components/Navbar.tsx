@@ -112,6 +112,7 @@ export function Navbar() {
           
           <Link to="/work" className={cn("text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors", navTextColor)}>Work</Link>
           <Link to="/about" className={cn("text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors", navTextColor)}>About</Link>
+          <Link to="/contact" className={cn("text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors", navTextColor)}>Contact</Link>
           <Button
             variant="secondary"
             size="sm"
@@ -180,6 +181,7 @@ export function Navbar() {
 
           <Link to="/work" className="text-3xl md:text-5xl font-display uppercase text-ink hover:text-accent font-bold py-2" onClick={() => setIsMobileMenuOpen(false)}>Work</Link>
           <Link to="/about" className="text-3xl md:text-5xl font-display uppercase text-ink hover:text-accent font-bold py-2" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
+          <Link to="/contact" className="text-3xl md:text-5xl font-display uppercase text-ink hover:text-accent font-bold py-2" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
           
           <Button
             size="lg"
