@@ -49,7 +49,7 @@ export function Navbar() {
       )}>
         <Link to="/" className="flex items-center gap-2 relative z-50">
           <img 
-            src="/logo.png" 
+            src="/logo.svg" 
             alt="Symphosys Logo" 
             className={cn("h-8 md:h-10 w-auto object-contain transition-all duration-300")}
           />

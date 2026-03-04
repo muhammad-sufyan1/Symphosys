@@ -42,7 +42,7 @@ export function Footer() {
       {/* Large Background Logo */}
       <div className="absolute bottom-0 left-0 w-full h-1/2 pointer-events-none flex justify-center items-end opacity-20 mix-blend-overlay">
         <img 
-          src="/logo.png" 
+          src="/logo.svg" 
           alt="Symphosys Logo Background" 
           className="w-full h-full object-cover object-bottom brightness-0 invert translate-y-[25%]" 
         />

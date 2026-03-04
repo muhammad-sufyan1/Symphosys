@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { Home } from './pages/Home';
 import ServicePage from './pages/ServicePage';
 import { About } from './pages/About';
@@ -28,6 +29,7 @@ export default function App() {
         </main>
         <Footer />
         <CookieBanner />
+        <Analytics />
       </div>
     </Router>
   );
