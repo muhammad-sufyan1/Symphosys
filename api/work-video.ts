@@ -1,13 +1,16 @@
 import { Readable } from 'node:stream';
 
 const DRIVE_ID_PATTERN = /^[A-Za-z0-9_-]{10,}$/;
-const RESOLVE_CACHE_TTL_MS = 5 * 60 * 1000;
+const RESOLVE_CACHE_TTL_MS = 15 * 60 * 1000;
+const PROBE_TIMEOUT_MS = 8000;
+const STREAM_TIMEOUT_MS = 25000;
+const RANGE_CACHE_CONTROL = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400';
+const FULL_CACHE_CONTROL = 'public, max-age=0, s-maxage=900, stale-while-revalidate=3600';
 const PASSTHROUGH_HEADERS = [
   'content-type',
   'content-length',
   'content-range',
   'accept-ranges',
-  'cache-control',
   'etag',
   'last-modified',
 ];
@@ -18,6 +21,20 @@ type CacheEntry = {
 };
 
 const resolvedUrlCache = new Map<string, CacheEntry>();
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 function getQueryValue(value: unknown): string {
   if (Array.isArray(value)) {
@@ -99,14 +116,14 @@ async function resolveDriveDownloadUrl(fileId: string, forceRefresh = false): Pr
   }
 
   const initialUrl = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
-  const probeResponse = await fetch(initialUrl, {
+  const probeResponse = await fetchWithTimeout(initialUrl, {
     method: 'GET',
     redirect: 'follow',
     headers: {
       Range: 'bytes=0-0',
       'User-Agent': 'Mozilla/5.0',
     },
-  });
+  }, PROBE_TIMEOUT_MS);
 
   const contentType = (probeResponse.headers.get('content-type') || '').toLowerCase();
   let resolvedUrl = '';
@@ -128,14 +145,14 @@ async function fetchDriveVideoResponse(fileId: string, rangeHeader: string | nul
   let targetUrl = await resolveDriveDownloadUrl(fileId);
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const upstream = await fetch(targetUrl, {
+    const upstream = await fetchWithTimeout(targetUrl, {
       method: 'GET',
       redirect: 'follow',
       headers: {
         ...(rangeHeader ? { Range: rangeHeader } : {}),
         'User-Agent': 'Mozilla/5.0',
       },
-    });
+    }, STREAM_TIMEOUT_MS);
 
     const contentType = (upstream.headers.get('content-type') || '').toLowerCase();
     if (!contentType.includes('text/html')) {
@@ -146,14 +163,14 @@ async function fetchDriveVideoResponse(fileId: string, rangeHeader: string | nul
     targetUrl = await resolveDriveDownloadUrl(fileId, true);
   }
 
-  return fetch(targetUrl, {
+  return fetchWithTimeout(targetUrl, {
     method: 'GET',
     redirect: 'follow',
     headers: {
       ...(rangeHeader ? { Range: rangeHeader } : {}),
       'User-Agent': 'Mozilla/5.0',
     },
-  });
+  }, STREAM_TIMEOUT_MS);
 }
 
 export default async function handler(req: any, res: any) {
@@ -163,11 +180,13 @@ export default async function handler(req: any, res: any) {
   }
 
   const fileId = getQueryValue(req?.query?.id).trim();
+  const isWarmupRequest = getQueryValue(req?.query?.warm).trim() === '1';
   if (!fileId || !DRIVE_ID_PATTERN.test(fileId)) {
     return res.status(400).json({ error: 'Missing or invalid Google Drive file id.' });
   }
 
-  const rangeHeader = typeof req?.headers?.range === 'string' ? req.headers.range : null;
+  const incomingRangeHeader = typeof req?.headers?.range === 'string' ? req.headers.range : null;
+  const rangeHeader = incomingRangeHeader || (req.method === 'HEAD' || isWarmupRequest ? 'bytes=0-0' : null);
 
   try {
     const upstream = await fetchDriveVideoResponse(fileId, rangeHeader);
@@ -182,6 +201,12 @@ export default async function handler(req: any, res: any) {
     res.statusCode = upstream.status;
     res.setHeader('x-video-proxy', 'drive');
     res.setHeader('access-control-allow-origin', '*');
+    res.setHeader('vary', 'Range');
+
+    const cacheControl = rangeHeader ? RANGE_CACHE_CONTROL : FULL_CACHE_CONTROL;
+    res.setHeader('cache-control', cacheControl);
+    res.setHeader('CDN-Cache-Control', cacheControl);
+    res.setHeader('Vercel-CDN-Cache-Control', cacheControl);
 
     for (const header of PASSTHROUGH_HEADERS) {
       const value = upstream.headers.get(header);
@@ -195,7 +220,7 @@ export default async function handler(req: any, res: any) {
       getInlineContentDisposition(fileId, upstream.headers.get('content-disposition')),
     );
 
-    if (req.method === 'HEAD' || !upstream.body) {
+    if (req.method === 'HEAD' || isWarmupRequest || !upstream.body) {
       return res.end();
     }
 

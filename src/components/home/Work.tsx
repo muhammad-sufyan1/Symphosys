@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Play, Search, X } from 'lucide-react';
 import { Button } from '../Button';
 
@@ -19,6 +19,18 @@ interface WorkVideosPayload {
 
 const PAGE_SIZE = 24;
 const IFRAME_LOAD_TIMEOUT_MS = 9000;
+const STREAM_WARMUP_TIMEOUT_MS = 4500;
+const PREFETCH_WARMUP_TIMEOUT_MS = 2500;
+const MAX_RETRIES_PER_SOURCE = 2;
+const RETRY_BASE_DELAY_MS = 450;
+
+function appendRetryToken(url: string, retryToken: number) {
+  if (retryToken === 0) {
+    return url;
+  }
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}retry=${retryToken}`;
+}
 
 function buildDriveStreamCandidates(videoId: string) {
   const id = encodeURIComponent(videoId);
@@ -87,8 +99,14 @@ export function Work() {
   const [selectedVideo, setSelectedVideo] = useState<WorkVideo | null>(null);
   const [playerMode, setPlayerMode] = useState<'native' | 'iframe'>('native');
   const [streamCandidateIndex, setStreamCandidateIndex] = useState(0);
+  const [streamRetryCount, setStreamRetryCount] = useState(0);
+  const [streamRetryToken, setStreamRetryToken] = useState(0);
   const [isNativeReady, setIsNativeReady] = useState(false);
+  const [isWarmingStream, setIsWarmingStream] = useState(false);
+  const [playerNotice, setPlayerNotice] = useState('');
   const [iframeTimedOut, setIframeTimedOut] = useState(false);
+  const retryTimerRef = useRef<number | null>(null);
+  const prefetchedVideoIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let isMounted = true;
@@ -156,9 +174,18 @@ export function Work() {
       return;
     }
 
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
     setPlayerMode('native');
     setStreamCandidateIndex(0);
+    setStreamRetryCount(0);
+    setStreamRetryToken(0);
     setIsNativeReady(false);
+    setIsWarmingStream(false);
+    setPlayerNotice('');
     setIframeTimedOut(false);
   }, [selectedVideo]);
 
@@ -167,7 +194,15 @@ export function Work() {
       return;
     }
     setIsNativeReady(false);
-  }, [playerMode, streamCandidateIndex, selectedVideo?.id]);
+  }, [playerMode, streamCandidateIndex, streamRetryToken, selectedVideo?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (playerMode !== 'iframe' || !selectedVideo) {
@@ -183,6 +218,43 @@ export function Work() {
       window.clearTimeout(timeoutId);
     };
   }, [playerMode, selectedVideo]);
+
+  useEffect(() => {
+    if (!selectedVideo || playerMode !== 'native') {
+      return;
+    }
+
+    let isActive = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), STREAM_WARMUP_TIMEOUT_MS);
+    const encodedId = encodeURIComponent(selectedVideo.id);
+
+    setIsWarmingStream(true);
+
+    const preloadPoster = new Image();
+    preloadPoster.referrerPolicy = 'no-referrer';
+    preloadPoster.decoding = 'async';
+    preloadPoster.src = selectedVideo.thumbnailUrl;
+
+    void fetch(`/api/work-video?id=${encodedId}&warm=1`, {
+      method: 'HEAD',
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+      .catch(() => undefined)
+      .finally(() => {
+        if (isActive) {
+          setIsWarmingStream(false);
+        }
+        window.clearTimeout(timeoutId);
+      });
+
+    return () => {
+      isActive = false;
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
+  }, [selectedVideo, playerMode]);
 
   const categories = useMemo(() => {
     const counts = new Map<string, number>();
@@ -223,22 +295,93 @@ export function Work() {
     () => (selectedVideo ? buildDriveStreamCandidates(selectedVideo.id) : []),
     [selectedVideo],
   );
-  const activeStreamUrl = streamCandidates[streamCandidateIndex] || '';
+  const activeStreamUrl = appendRetryToken(streamCandidates[streamCandidateIndex] || '', streamRetryToken);
   const previewSrc = selectedVideo
     ? `${selectedVideo.previewUrl}${selectedVideo.previewUrl.includes('?') ? '&' : '?'}autoplay=1`
     : '';
 
+  const prefetchVideoAssets = (video: WorkVideo) => {
+    if (prefetchedVideoIdsRef.current.has(video.id)) {
+      return;
+    }
+
+    prefetchedVideoIdsRef.current.add(video.id);
+
+    const preloadPoster = new Image();
+    preloadPoster.referrerPolicy = 'no-referrer';
+    preloadPoster.decoding = 'async';
+    preloadPoster.src = video.thumbnailUrl;
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), PREFETCH_WARMUP_TIMEOUT_MS);
+
+    void fetch(`/api/work-video?id=${encodeURIComponent(video.id)}&warm=1`, {
+      method: 'HEAD',
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+      .catch(() => undefined)
+      .finally(() => {
+        window.clearTimeout(timeoutId);
+      });
+  };
+
+  const handleNativePlayable = () => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    setIsNativeReady(true);
+    setStreamRetryCount(0);
+    setPlayerNotice('');
+  };
+
   const resetNativePlayer = () => {
+    if (retryTimerRef.current !== null) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
     setPlayerMode('native');
     setStreamCandidateIndex(0);
+    setStreamRetryCount(0);
+    setStreamRetryToken(0);
     setIsNativeReady(false);
+    setPlayerNotice('');
   };
 
   const handleNativePlaybackError = () => {
+    setIsNativeReady(false);
+
+    if (streamRetryCount < MAX_RETRIES_PER_SOURCE) {
+      const nextRetry = streamRetryCount + 1;
+      const retryDelayMs = RETRY_BASE_DELAY_MS * nextRetry;
+
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+      }
+
+      setStreamRetryCount(nextRetry);
+      setPlayerNotice(`Reconnecting stream... retry ${nextRetry} of ${MAX_RETRIES_PER_SOURCE}`);
+      retryTimerRef.current = window.setTimeout(() => {
+        setStreamRetryToken((previous) => previous + 1);
+      }, retryDelayMs);
+      return;
+    }
+
     if (streamCandidateIndex < streamCandidates.length - 1) {
+      if (retryTimerRef.current !== null) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+
+      setPlayerNotice('Switching to alternate source...');
+      setStreamRetryCount(0);
+      setStreamRetryToken(0);
       setStreamCandidateIndex((previous) => previous + 1);
       return;
     }
+
+    setPlayerNotice('Direct stream could not start on this network. Trying Google Drive player...');
     setPlayerMode('iframe');
   };
 
@@ -327,7 +470,12 @@ export function Work() {
                   <button
                     type="button"
                     key={video.id}
-                    onClick={() => setSelectedVideo(video)}
+                    onClick={() => {
+                      prefetchVideoAssets(video);
+                      setSelectedVideo(video);
+                    }}
+                    onMouseEnter={() => prefetchVideoAssets(video)}
+                    onFocus={() => prefetchVideoAssets(video)}
                     className="group text-left"
                   >
                     <article className="relative aspect-[4/5] rounded-[28px] overflow-hidden border border-ink/10 bg-surface">
@@ -447,15 +595,15 @@ export function Work() {
                       playsInline
                       autoPlay
                       preload="metadata"
-                      onCanPlay={() => setIsNativeReady(true)}
-                      onLoadedData={() => setIsNativeReady(true)}
+                      onCanPlay={handleNativePlayable}
+                      onLoadedData={handleNativePlayable}
                       onError={handleNativePlaybackError}
                     />
                     {!isNativeReady ? (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-bg/80 pointer-events-none">
                         <span className="w-10 h-10 rounded-full border-2 border-bg/40 border-t-bg animate-spin" />
                         <p className="text-xs md:text-sm uppercase tracking-[0.14em] font-semibold">
-                          Loading Video Player...
+                          {playerNotice || (isWarmingStream ? 'Optimizing Stream For Fast Start...' : 'Loading Video Player...')}
                         </p>
                       </div>
                     ) : null}
@@ -486,13 +634,22 @@ export function Work() {
 
             <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm">
               {playerMode === 'native' ? (
-                <button
-                  type="button"
-                  onClick={() => setPlayerMode('iframe')}
-                  className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
-                >
-                  Try Drive Player
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={resetNativePlayer}
+                    className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
+                  >
+                    Retry Fast Load
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlayerMode('iframe')}
+                    className="rounded-full border border-bg/25 text-bg/90 px-4 py-2 font-semibold uppercase tracking-[0.12em] hover:bg-bg/10 transition-colors"
+                  >
+                    Try Drive Player
+                  </button>
+                </>
               ) : (
                 <button
                   type="button"
@@ -516,6 +673,12 @@ export function Work() {
                 Source {Math.min(streamCandidateIndex + 1, streamCandidates.length)} of {streamCandidates.length}
               </p>
             </div>
+
+            {playerNotice ? (
+              <p className="text-xs md:text-sm text-bg/70 font-medium" aria-live="polite">
+                {playerNotice}
+              </p>
+            ) : null}
           </div>
         </div>
       ) : null}
