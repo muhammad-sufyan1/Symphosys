@@ -1,7 +1,10 @@
 import React from 'react';
 import { Button } from '../Button';
+import { useBookingModal } from '../../contexts/BookingModalContext';
 
 export function CTA() {
+  const { openBookingModal } = useBookingModal();
+
   return (
     <section className="py-24 bg-ink text-white relative overflow-hidden">
       {/* Background Elements */}
@@ -15,7 +18,12 @@ export function CTA() {
         <p className="text-xl text-white/70 mb-10 max-w-2xl mx-auto">
           Book a free 30-minute strategy call. We'll review your current setup and tell you exactly what we'd do to move the needle.
         </p>
-        <Button variant="accent" size="lg" className="text-lg px-8">
+        <Button
+          variant="accent"
+          size="lg"
+          className="text-lg px-8"
+          onClick={() => openBookingModal('home-bottom-cta')}
+        >
           Book Your Free Call
         </Button>
       </div>

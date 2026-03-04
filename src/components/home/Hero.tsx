@@ -3,11 +3,13 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Button } from '../Button';
+import { useBookingModal } from '../../contexts/BookingModalContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Hero() {
   const container = useRef<HTMLDivElement>(null);
+  const { openBookingModal } = useBookingModal();
 
   useGSAP(() => {
     const tl = gsap.timeline();
@@ -93,7 +95,11 @@ export function Hero() {
             Running a business is hard enough without worrying about your website, your marketing, your branding, and your content all at once. That's exactly why we exist.
           </p>
           <div className="hero-btn w-full md:w-auto shrink-0">
-            <Button size="lg" className="w-full md:w-auto">
+            <Button
+              size="lg"
+              className="w-full md:w-auto"
+              onClick={() => openBookingModal('home-hero')}
+            >
               Get a Free Strategy Call
             </Button>
           </div>

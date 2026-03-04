@@ -2,15 +2,15 @@ import React, { useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
-import { Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
+import { useBookingModal } from '../contexts/BookingModalContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function About() {
   const container = useRef<HTMLDivElement>(null);
+  const { openBookingModal } = useBookingModal();
 
   useGSAP(() => {
     const tl = gsap.timeline();
@@ -134,11 +134,13 @@ export function About() {
           <p className="text-xl text-ink/70 mb-12 max-w-2xl mx-auto">
             Let's talk about your goals and how we can help you reach them faster.
           </p>
-          <Link to="/contact">
-            <Button size="lg" className="text-lg px-10">
-              Get in Touch
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            className="text-lg px-10"
+            onClick={() => openBookingModal('about-cta')}
+          >
+            Get in Touch
+          </Button>
         </div>
       </section>
     </div>

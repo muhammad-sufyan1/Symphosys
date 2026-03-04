@@ -2,6 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import { Resend } from "resend";
 import dotenv from "dotenv";
+import bookCallHandler from "./api/book-call";
 
 dotenv.config();
 
@@ -231,6 +232,10 @@ async function startServer() {
       console.error("Error subscribing:", error);
       res.status(500).json({ error: "Failed to subscribe" });
     }
+  });
+
+  app.all("/api/book-call", async (req, res) => {
+    await bookCallHandler(req, res);
   });
 
   // Vite middleware for development

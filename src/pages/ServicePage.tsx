@@ -8,6 +8,7 @@ import { ArrowRight, Plus, Minus, ArrowDown } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Button } from '../components/Button';
 import { SEO } from '../components/SEO';
+import { useBookingModal } from '../contexts/BookingModalContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,6 +17,7 @@ export default function ServicePage() {
   const service = servicesData.find(s => s.slug === slug);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { openBookingModal } = useBookingModal();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -175,7 +177,11 @@ export default function ServicePage() {
               {service.hero.description}
             </p>
             <div className="hero-btn w-full md:w-auto shrink-0">
-              <Button size="lg" className="w-full md:w-auto">
+              <Button
+                size="lg"
+                className="w-full md:w-auto"
+                onClick={() => openBookingModal(`service-hero-${service.slug}`)}
+              >
                 {service.hero.ctaText || 'Get a Free Strategy Call'}
               </Button>
             </div>
@@ -356,7 +362,10 @@ export default function ServicePage() {
           {service.finalCta.title}
         </h3>
         
-        <button className="relative z-10 group flex items-center gap-4 border border-bg/30 rounded-full px-8 py-4 md:px-12 md:py-6 hover:bg-bg hover:text-ink transition-all duration-500 overflow-hidden">
+        <button
+          className="relative z-10 group flex items-center gap-4 border border-bg/30 rounded-full px-8 py-4 md:px-12 md:py-6 hover:bg-bg hover:text-ink transition-all duration-500 overflow-hidden"
+          onClick={() => openBookingModal(`service-final-${service.slug}`)}
+        >
           <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold relative z-10">
             {service.finalCta.buttonText}
           </span>

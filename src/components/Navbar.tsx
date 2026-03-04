@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react';
 import { Button } from './Button';
 import { cn } from '../utils/cn';
 import { servicesData } from '../data/services';
+import { useBookingModal } from '../contexts/BookingModalContext';
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
-  const location = useLocation();
+  const { openBookingModal } = useBookingModal();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,11 +112,13 @@ export function Navbar() {
           
           <Link to="/work" className={cn("text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors", navTextColor)}>Work</Link>
           <Link to="/about" className={cn("text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors", navTextColor)}>About</Link>
-          <Link to="/contact">
-            <Button variant="secondary" size="sm">
-              Get a Strategy Call
-            </Button>
-          </Link>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openBookingModal('navbar-desktop')}
+          >
+            Get a Strategy Call
+          </Button>
         </nav>
 
         {/* Mobile Menu Toggle */}
@@ -178,11 +181,17 @@ export function Navbar() {
           <Link to="/work" className="text-3xl md:text-5xl font-display uppercase text-ink hover:text-accent font-bold py-2" onClick={() => setIsMobileMenuOpen(false)}>Work</Link>
           <Link to="/about" className="text-3xl md:text-5xl font-display uppercase text-ink hover:text-accent font-bold py-2" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
           
-          <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-            <Button size="lg" variant="secondary" className="mt-8 w-full">
-              Get a Strategy Call
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            variant="secondary"
+            className="mt-8 w-full"
+            onClick={() => {
+              setIsMobileMenuOpen(false);
+              openBookingModal('navbar-mobile');
+            }}
+          >
+            Get a Strategy Call
+          </Button>
         </div>
       </div>
     </header>
