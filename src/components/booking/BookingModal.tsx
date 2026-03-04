@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CalendarClock, CircleAlert, CircleCheckBig, Clock3, X } from 'lucide-react';
+import {
+  CalendarClock,
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  CircleCheckBig,
+  Clock3,
+  X,
+} from 'lucide-react';
 import { Button } from '../Button';
 
 interface AvailabilitySlot {
@@ -30,6 +38,7 @@ interface BookingConfirmation {
   timeLabel: string;
   durationMinutes: number;
   email: string;
+  simulated?: boolean;
 }
 
 interface BookingModalProps {
@@ -54,6 +63,53 @@ const INITIAL_FORM_STATE: BookingFormState = {
   notes: '',
 };
 
+const WEEKDAY_HEADERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function toDateKey(year: number, monthIndex: number, day: number): string {
+  return `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function getMonthKey(dateKey: string): string {
+  return dateKey.slice(0, 7);
+}
+
+function parseMonthKey(monthKey: string): { year: number; monthIndex: number } | null {
+  const match = /^(\d{4})-(\d{2})$/.exec(monthKey);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number.parseInt(match[1], 10);
+  const monthIndex = Number.parseInt(match[2], 10) - 1;
+
+  if (Number.isNaN(year) || Number.isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+    return null;
+  }
+
+  return { year, monthIndex };
+}
+
+function getDaysInMonth(year: number, monthIndex: number): number {
+  return new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+}
+
+function getFirstWeekdayOfMonth(year: number, monthIndex: number): number {
+  return new Date(Date.UTC(year, monthIndex, 1)).getUTCDay();
+}
+
+function formatMonthLabel(monthKey: string): string {
+  const parsed = parseMonthKey(monthKey);
+  if (!parsed) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(parsed.year, parsed.monthIndex, 1)));
+}
+
 async function safeJson<T>(response: Response): Promise<T | null> {
   try {
     return (await response.json()) as T;
@@ -66,6 +122,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
   const [availability, setAvailability] = useState<BookingAvailability | null>(null);
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
   const [availabilityError, setAvailabilityError] = useState('');
+  const [viewedMonth, setViewedMonth] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedStartIso, setSelectedStartIso] = useState('');
   const [formState, setFormState] = useState<BookingFormState>(INITIAL_FORM_STATE);
@@ -78,14 +135,23 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
       const firstDayWithSlot = nextAvailability.days.find((day) => day.slots.length > 0);
       const hasSelectedDate = selectedDate && nextAvailability.days.some((day) => day.date === selectedDate);
       const nextDate = hasSelectedDate ? selectedDate : firstDayWithSlot?.date || '';
+      const hasViewedMonth = viewedMonth && nextAvailability.days.some((day) => getMonthKey(day.date) === viewedMonth);
+      const nextViewedMonth = hasViewedMonth
+        ? viewedMonth
+        : nextDate
+          ? getMonthKey(nextDate)
+          : firstDayWithSlot
+            ? getMonthKey(firstDayWithSlot.date)
+            : '';
 
       const nextDateSlots = nextAvailability.days.find((day) => day.date === nextDate)?.slots || [];
       const hasSelectedSlot = selectedStartIso && nextDateSlots.some((slot) => slot.startIso === selectedStartIso);
 
+      setViewedMonth(nextViewedMonth);
       setSelectedDate(nextDate);
       setSelectedStartIso(hasSelectedSlot ? selectedStartIso : nextDateSlots[0]?.startIso || '');
     },
-    [selectedDate, selectedStartIso],
+    [selectedDate, selectedStartIso, viewedMonth],
   );
 
   const loadAvailability = useCallback(async () => {
@@ -125,6 +191,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
     if (!isOpen) {
       setAvailability(null);
       setAvailabilityError('');
+      setViewedMonth('');
       setSelectedDate('');
       setSelectedStartIso('');
       setSubmitError('');
@@ -169,6 +236,82 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
     return selectedDay.slots.find((slot) => slot.startIso === selectedStartIso) || null;
   }, [selectedDay, selectedStartIso]);
 
+  const availabilityByDate = useMemo(() => {
+    const map = new Map<string, AvailabilityDay>();
+    if (!availability) {
+      return map;
+    }
+
+    for (const day of availability.days) {
+      map.set(day.date, day);
+    }
+
+    return map;
+  }, [availability]);
+
+  const availableMonthKeys = useMemo(() => {
+    if (!availability) {
+      return [] as string[];
+    }
+
+    const months = new Set<string>();
+    for (const day of availability.days) {
+      months.add(getMonthKey(day.date));
+    }
+
+    return Array.from(months).sort();
+  }, [availability]);
+
+  const activeMonthKey = useMemo(() => {
+    if (viewedMonth && availableMonthKeys.includes(viewedMonth)) {
+      return viewedMonth;
+    }
+    return availableMonthKeys[0] || '';
+  }, [availableMonthKeys, viewedMonth]);
+
+  const activeMonthIndex = useMemo(
+    () => availableMonthKeys.indexOf(activeMonthKey),
+    [availableMonthKeys, activeMonthKey],
+  );
+
+  const monthLabel = useMemo(() => formatMonthLabel(activeMonthKey), [activeMonthKey]);
+
+  const calendarCells = useMemo(() => {
+    if (!activeMonthKey) {
+      return [] as Array<{ kind: 'empty' } | { kind: 'day'; dateKey: string; day: number; slotCount: number }>;
+    }
+
+    const parsedMonth = parseMonthKey(activeMonthKey);
+    if (!parsedMonth) {
+      return [] as Array<{ kind: 'empty' } | { kind: 'day'; dateKey: string; day: number; slotCount: number }>;
+    }
+
+    const firstWeekday = getFirstWeekdayOfMonth(parsedMonth.year, parsedMonth.monthIndex);
+    const daysInMonth = getDaysInMonth(parsedMonth.year, parsedMonth.monthIndex);
+    const cells: Array<{ kind: 'empty' } | { kind: 'day'; dateKey: string; day: number; slotCount: number }> = [];
+
+    for (let index = 0; index < firstWeekday; index += 1) {
+      cells.push({ kind: 'empty' });
+    }
+
+    for (let dayNumber = 1; dayNumber <= daysInMonth; dayNumber += 1) {
+      const dateKey = toDateKey(parsedMonth.year, parsedMonth.monthIndex, dayNumber);
+      const availabilityDay = availabilityByDate.get(dateKey);
+      cells.push({
+        kind: 'day',
+        dateKey,
+        day: dayNumber,
+        slotCount: availabilityDay?.slots.length || 0,
+      });
+    }
+
+    return cells;
+  }, [activeMonthKey, availabilityByDate]);
+
+  const canGoToPreviousMonth = activeMonthIndex > 0;
+  const canGoToNextMonth =
+    activeMonthIndex >= 0 && activeMonthIndex < availableMonthKeys.length - 1;
+
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
@@ -184,8 +327,37 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
     }
 
     const day = availability.days.find((item) => item.date === date);
+    setViewedMonth(getMonthKey(date));
     setSelectedDate(date);
     setSelectedStartIso(day?.slots[0]?.startIso || '');
+  };
+
+  const handleMonthNavigation = (direction: 'previous' | 'next') => {
+    if (activeMonthIndex < 0) {
+      return;
+    }
+
+    const delta = direction === 'previous' ? -1 : 1;
+    const nextMonthKey = availableMonthKeys[activeMonthIndex + delta];
+    if (!nextMonthKey) {
+      return;
+    }
+
+    setViewedMonth(nextMonthKey);
+
+    if (selectedDate && getMonthKey(selectedDate) === nextMonthKey) {
+      return;
+    }
+
+    const firstAvailableDayInMonth = availability?.days.find((day) => getMonthKey(day.date) === nextMonthKey);
+    if (!firstAvailableDayInMonth) {
+      setSelectedDate('');
+      setSelectedStartIso('');
+      return;
+    }
+
+    setSelectedDate(firstAvailableDayInMonth.date);
+    setSelectedStartIso(firstAvailableDayInMonth.slots[0]?.startIso || '');
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -213,6 +385,7 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
       const data = await safeJson<{
         booking?: BookingConfirmation;
         availability?: BookingAvailability;
+        simulated?: boolean;
         error?: string;
       }>(response);
 
@@ -227,7 +400,10 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
         return;
       }
 
-      setSuccessBooking(data.booking);
+      setSuccessBooking({
+        ...data.booking,
+        simulated: Boolean(data.simulated),
+      });
       setFormState(INITIAL_FORM_STATE);
       void loadAvailability();
     } catch (error) {
@@ -274,9 +450,16 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                 <CircleCheckBig size={24} />
                 <h3 className="font-display text-2xl uppercase">Booking Confirmed</h3>
               </div>
-              <p className="text-ink/80 font-medium mb-6">
-                Confirmation email has been sent to <strong>{successBooking.email}</strong>.
-              </p>
+              {successBooking.simulated ? (
+                <div className="rounded-2xl border border-amber-400/35 bg-amber-400/10 p-4 text-sm text-amber-700 font-medium mb-6">
+                  Booking is saved, but email sending is currently disabled on server.
+                  Configure `RESEND_API_KEY` + `RESEND_FROM_EMAIL` to send confirmations.
+                </div>
+              ) : (
+                <p className="text-ink/80 font-medium mb-6">
+                  Confirmation email has been sent to <strong>{successBooking.email}</strong>.
+                </p>
+              )}
               <div className="space-y-2 text-sm md:text-base text-ink/80 mb-8">
                 <p><strong>Date:</strong> {successBooking.dateLabel}</p>
                 <p><strong>Time:</strong> {successBooking.timeLabel}</p>
@@ -334,33 +517,90 @@ export function BookingModal({ isOpen, onClose, source }: BookingModalProps) {
                   <>
                     {availability.days.length > 0 ? (
                       <>
-                        <div className="flex gap-2 overflow-x-auto pb-1">
-                          {availability.days.map((day) => {
-                            const isActive = day.date === selectedDate;
-                            const isDisabled = day.slots.length === 0;
+                        <div className="rounded-2xl border border-ink/10 bg-bg p-3 md:p-4">
+                          <div className="flex items-center justify-between gap-3 mb-3">
+                            <button
+                              type="button"
+                              onClick={() => handleMonthNavigation('previous')}
+                              disabled={!canGoToPreviousMonth}
+                              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${
+                                canGoToPreviousMonth
+                                  ? 'border-ink/20 text-ink/70 hover:border-accent/40 hover:text-accent'
+                                  : 'border-ink/10 text-ink/30 cursor-not-allowed'
+                              }`}
+                              aria-label="Previous month"
+                            >
+                              <ChevronLeft size={16} />
+                            </button>
 
-                            return (
-                              <button
-                                key={day.date}
-                                type="button"
-                                onClick={() => handleDateSelection(day.date)}
-                                disabled={isDisabled}
-                                className={`shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                                  isActive
-                                    ? 'bg-ink text-bg border-ink'
-                                    : isDisabled
-                                      ? 'bg-bg text-ink/35 border-ink/10 cursor-not-allowed'
-                                      : 'bg-bg text-ink/70 border-ink/15 hover:border-accent/40 hover:text-accent'
-                                }`}
+                            <p className="font-display text-lg uppercase">{monthLabel}</p>
+
+                            <button
+                              type="button"
+                              onClick={() => handleMonthNavigation('next')}
+                              disabled={!canGoToNextMonth}
+                              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${
+                                canGoToNextMonth
+                                  ? 'border-ink/20 text-ink/70 hover:border-accent/40 hover:text-accent'
+                                  : 'border-ink/10 text-ink/30 cursor-not-allowed'
+                              }`}
+                              aria-label="Next month"
+                            >
+                              <ChevronRight size={16} />
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-7 gap-1 mb-2">
+                            {WEEKDAY_HEADERS.map((label) => (
+                              <div
+                                key={label}
+                                className="text-[10px] uppercase tracking-[0.15em] font-bold text-center text-ink/40 py-1"
                               >
-                                {day.label}
-                              </button>
-                            );
-                          })}
+                                {label}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="grid grid-cols-7 gap-1">
+                            {calendarCells.map((cell, index) => {
+                              if (cell.kind === 'empty') {
+                                return <div key={`empty-${index}`} className="aspect-square" />;
+                              }
+
+                              const isActive = cell.dateKey === selectedDate;
+                              const isAvailable = cell.slotCount > 0;
+
+                              return (
+                                <button
+                                  key={cell.dateKey}
+                                  type="button"
+                                  onClick={() => handleDateSelection(cell.dateKey)}
+                                  disabled={!isAvailable}
+                                  className={`aspect-square rounded-lg border px-1 py-1 text-xs md:text-sm font-semibold transition-colors flex flex-col items-center justify-center ${
+                                    isActive
+                                      ? 'bg-ink text-bg border-ink'
+                                      : isAvailable
+                                        ? 'bg-white border-ink/15 text-ink/75 hover:border-accent/40 hover:text-accent'
+                                        : 'bg-bg border-ink/10 text-ink/30 cursor-not-allowed'
+                                  }`}
+                                  aria-label={`${cell.day} ${monthLabel}`}
+                                >
+                                  <span>{cell.day}</span>
+                                  {isAvailable ? (
+                                    <span className={`text-[10px] ${isActive ? 'text-bg/75' : 'text-ink/45'}`}>
+                                      {cell.slotCount}
+                                    </span>
+                                  ) : null}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
 
                         <div className="mt-5">
-                          <p className="text-xs uppercase tracking-[0.16em] font-bold text-ink/50 mb-3">Available Slots</p>
+                          <p className="text-xs uppercase tracking-[0.16em] font-bold text-ink/50 mb-3">
+                            {selectedDay ? `Available Slots • ${selectedDay.label}` : 'Available Slots'}
+                          </p>
                           {selectedDay && selectedDay.slots.length > 0 ? (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                               {selectedDay.slots.map((slot) => {

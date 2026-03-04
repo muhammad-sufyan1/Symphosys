@@ -630,6 +630,7 @@ export default async function handler(req: any, res: AnyResponse) {
     return res.status(200).json({
       success: true,
       simulated: true,
+      emailStatus: 'simulated',
       booking: toPublicBookingPayload(booking),
     });
   }
@@ -663,6 +664,8 @@ export default async function handler(req: any, res: AnyResponse) {
 
     return res.status(200).json({
       success: true,
+      simulated: false,
+      emailStatus: 'sent',
       booking: toPublicBookingPayload(booking),
     });
   } catch (error) {

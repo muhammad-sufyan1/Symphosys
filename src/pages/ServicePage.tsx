@@ -363,7 +363,7 @@ export default function ServicePage() {
         </h3>
         
         <button
-          className="relative z-10 group flex items-center gap-4 border border-bg/30 rounded-full px-8 py-4 md:px-12 md:py-6 hover:bg-bg hover:text-ink transition-all duration-500 overflow-hidden"
+          className="relative z-10 group flex items-center gap-4 border border-bg/30 rounded-full px-8 py-4 md:px-12 md:py-6 hover:bg-bg hover:text-ink transition-all duration-500 overflow-hidden cursor-pointer"
           onClick={() => openBookingModal(`service-final-${service.slug}`)}
         >
           <span className="text-xs md:text-sm uppercase tracking-[0.2em] font-bold relative z-10">
