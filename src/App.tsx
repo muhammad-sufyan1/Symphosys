@@ -55,6 +55,7 @@ export default function App() {
             <Footer />
             <CookieBanner />
             <Analytics />
+            <SpeedInsights/>
           </div>
         </div>
       </BookingModalProvider>
