@@ -147,6 +147,7 @@ export function Footer() {
           <p>&copy; {new Date().getFullYear()} Symphosys Digital Agency. All rights reserved.</p>
           <div className="flex gap-8 mt-6 md:mt-0">
             <Link to="/work" className="hover:text-ink transition-colors">Work Portfolio</Link>
+            <Link to="/case-studies" className="hover:text-ink transition-colors">Case Studies</Link>
             <Link to="/contact" className="hover:text-ink transition-colors">Book Strategy Call</Link>
             <Link to="/about" className="hover:text-ink transition-colors">Our Process</Link>
           </div>

@@ -14,6 +14,11 @@ const coreContentLinks = [
     description: 'See real campaign and creative execution in our video work library.',
   },
   {
+    label: 'Case Studies',
+    to: '/case-studies',
+    description: 'Detailed breakdowns of problems, solutions, and business impact.',
+  },
+  {
     label: 'Contact Us',
     to: '/contact',
     description: 'Talk with our team about growth goals, scope, and timelines.',

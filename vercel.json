@@ -9,11 +9,15 @@
       "dest": "/index.html"
     },
     {
-      "src": "/(about|contact|work|terms|privacy)$",
+      "src": "/(about|contact|work|case-studies|terms|privacy)$",
       "dest": "/index.html"
     },
     {
       "src": "/services/(web-development|shopify-store-design|graphic-design|video-editing|video-animations|growth-marketing|lead-generation|brand-building|digital-marketing|creative-ads)$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/case-studies/(web-development|shopify-store-design|graphic-design|video-editing|video-animations|growth-marketing|lead-generation|brand-building|digital-marketing|creative-ads)$",
       "dest": "/index.html"
     },
     {

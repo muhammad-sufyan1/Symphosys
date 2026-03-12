@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { servicesData } from '../data/services';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
@@ -11,6 +11,8 @@ import { SEO } from '../components/SEO';
 import { useBookingModal } from '../contexts/BookingModalContext';
 import { ConsultationCtaBox } from '../components/ConsultationCtaBox';
 import { NotFound } from './NotFound';
+import { caseStudies } from '../data/caseStudies';
+import { serviceEnhancements } from '../data/serviceEnhancements';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -139,6 +141,9 @@ export default function ServicePage() {
     normalizedMetaDescription.length > 157
       ? `${normalizedMetaDescription.slice(0, 157).trimEnd()}...`
       : normalizedMetaDescription;
+  const enhancement = serviceEnhancements.find((item) => item.slug === service.slug);
+  const study = caseStudies.find((item) => item.slug === service.slug);
+  const relatedStudies = caseStudies.filter((item) => item.slug !== service.slug).slice(0, 3);
 
   const serviceSchema = {
     '@context': 'https://schema.org',
@@ -289,6 +294,36 @@ export default function ServicePage() {
         </div>
       </section>
 
+      {enhancement?.whyChooseSymphosys && (
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-surface relative overflow-hidden">
+          <div className="absolute -top-20 right-0 w-[40vw] h-[40vw] rounded-full bg-accent/10 blur-[120px] pointer-events-none"></div>
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start relative z-10">
+            <div className="lg:col-span-5">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
+                Why Symphosys
+              </p>
+              <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9] mb-6">
+                {enhancement.whyChooseSymphosys.headline}
+              </h2>
+              <p className="text-lg text-ink/70 font-medium leading-relaxed">
+                {enhancement.whyChooseSymphosys.intro}
+              </p>
+            </div>
+            <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {enhancement.whyChooseSymphosys.points.map((point, index) => (
+                <div key={point.title} className="rounded-3xl border border-ink/10 bg-white p-6">
+                  <p className="text-xs uppercase tracking-[0.2em] text-ink/40 font-bold mb-3">
+                    0{index + 1}
+                  </p>
+                  <h3 className="font-display text-2xl uppercase mb-3">{point.title}</h3>
+                  <p className="text-ink/70 font-medium">{point.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 2. MINIMALIST INCLUDED GRID */}
       <section className="py-32 px-6 md:px-12 bg-ink text-bg">
         <div className="max-w-screen-2xl mx-auto">
@@ -325,7 +360,151 @@ export default function ServicePage() {
         </div>
       </section>
 
+      {study && (
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-bg">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
+                Case Study Spotlight
+              </p>
+              <h2 className="font-display text-4xl md:text-5xl uppercase leading-[0.9] mb-6">
+                {study.client}
+              </h2>
+              <p className="text-lg text-ink/70 font-medium mb-6">{study.summary}</p>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {study.impact.map((metric) => (
+                  <div key={metric.label} className="rounded-2xl border border-ink/10 bg-surface p-4">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-ink/50 font-bold mb-2">
+                      {metric.label}
+                    </p>
+                    <p className="font-display text-2xl uppercase">{metric.value}</p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                to={`/case-studies/${study.slug}`}
+                className="inline-flex items-center justify-center rounded-full bg-accent text-white px-8 py-4 text-sm font-bold uppercase tracking-[0.14em] transition-colors hover:bg-ink"
+              >
+                Read the Case Study
+              </Link>
+            </div>
+            <div className="lg:col-span-6">
+              <div className="rounded-3xl overflow-hidden border border-ink/10 bg-surface">
+                <img
+                  src={study.heroImage}
+                  alt={`${study.client} case study`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <ConsultationCtaBox />
+
+      {enhancement?.whyChooseService && (
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-ink text-bg">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-5">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-bg/60 mb-4">
+                Why Choose Us
+              </p>
+              <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9] mb-6">
+                {enhancement.whyChooseService.headline}
+              </h2>
+              <p className="text-lg text-bg/80 font-medium leading-relaxed">
+                {enhancement.whyChooseService.intro}
+              </p>
+            </div>
+            <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {enhancement.whyChooseService.points.map((point, index) => (
+                <div key={point.title} className="rounded-3xl border border-bg/20 bg-white/5 p-6">
+                  <p className="text-xs uppercase tracking-[0.2em] text-bg/50 font-bold mb-3">
+                    0{index + 1}
+                  </p>
+                  <h3 className="font-display text-2xl uppercase mb-3">{point.title}</h3>
+                  <p className="text-bg/70 font-medium">{point.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {study && (
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-bg">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
+                  Proof of Work
+                </p>
+                <h2 className="font-display text-4xl md:text-5xl uppercase leading-[0.9]">
+                  What We Delivered
+                </h2>
+              </div>
+              <Button onClick={() => openBookingModal(`service-proof-${service.slug}`)} size="lg">
+                Book a Free Call
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {study.proofOfWork.map((item) => (
+                <div key={item} className="rounded-3xl border border-ink/10 bg-surface p-6">
+                  <p className="text-lg text-ink/75 font-medium">• {item}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-16">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
+                    Proof Across Services
+                  </p>
+                  <h3 className="font-display text-3xl md:text-4xl uppercase leading-[0.9]">
+                    More Results From Symphosys
+                  </h3>
+                </div>
+                <Link
+                  to="/case-studies"
+                  className="inline-flex items-center gap-3 text-sm uppercase tracking-[0.2em] font-bold text-accent"
+                >
+                  View All Case Studies <ArrowRight size={16} />
+                </Link>
+              </div>
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedStudies.map((item) => (
+                  <Link
+                    key={item.slug}
+                    to={`/case-studies/${item.slug}`}
+                    className="rounded-3xl border border-ink/10 bg-surface overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-xl"
+                  >
+                    <div className="aspect-[4/3] overflow-hidden bg-ink/5">
+                      <img
+                        src={item.heroImage}
+                        alt={`${item.client} case study`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-ink/50 font-bold mb-3">
+                        {item.serviceName}
+                      </p>
+                      <p className="font-display text-xl uppercase mb-2">{item.title}</p>
+                      <p className="text-ink/70 font-medium">{item.subtitle}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 3. STICKY PROCESS TIMELINE */}
       <section className="py-32 px-6 md:px-12 relative bg-bg text-ink">

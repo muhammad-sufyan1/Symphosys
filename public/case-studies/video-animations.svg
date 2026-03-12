@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="#1A1A1A"/>
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF9D4D" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#1A1A1A" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+  <rect x="120" y="120" width="1360" height="660" rx="48" fill="url(#g1)" fill-opacity="0.9"/>
+  <circle cx="1280" cy="240" r="160" fill="#FF9D4D" fill-opacity="0.25"/>
+  <circle cx="380" cy="700" r="220" fill="#FF9D4D" fill-opacity="0.18"/>
+  <rect x="220" y="260" width="520" height="8" fill="#FFFFFF" fill-opacity="0.8"/>
+  <text x="220" y="340" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" letter-spacing="4">VIDEO ANIMATIONS</text>
+  <text x="220" y="420" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="600" letter-spacing="6" opacity="0.7">CASE STUDY</text>
+  <text x="220" y="480" fill="#FFFFFF" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="500" opacity="0.9">Pulse Analytics</text>
+</svg>

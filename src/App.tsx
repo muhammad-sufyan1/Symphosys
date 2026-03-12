@@ -18,6 +18,8 @@ const Terms = lazy(() => import('./pages/Terms').then((module) => ({ default: mo
 const Privacy = lazy(() => import('./pages/Privacy').then((module) => ({ default: module.Privacy })));
 const WorkPage = lazy(() => import('./pages/Work').then((module) => ({ default: module.WorkPage })));
 const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
+const CaseStudiesPage = lazy(() => import('./pages/CaseStudies').then((module) => ({ default: module.CaseStudiesPage })));
+const CaseStudyPage = lazy(() => import('./pages/CaseStudyPage').then((module) => ({ default: module.CaseStudyPage })));
 
 function RouteFallback() {
   return (
@@ -43,6 +45,8 @@ export default function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/work" element={<WorkPage />} />
+                  <Route path="/case-studies" element={<CaseStudiesPage />} />
+                  <Route path="/case-studies/:slug" element={<CaseStudyPage />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/404" element={<NotFound />} />
