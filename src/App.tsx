@@ -9,6 +9,7 @@ import { BookingModalProvider } from './contexts/BookingModalContext';
 import { AmbientBackground } from './components/AmbientBackground';
 import { SeoInternalLinks } from './components/SeoInternalLinks';
 import { ClientReviewsSection } from './components/ClientReviewsSection';
+import { CustomCursor } from './components/CustomCursor';
 
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 const ServicePage = lazy(() => import('./pages/ServicePage'));
@@ -35,6 +36,7 @@ export default function App() {
       <BookingModalProvider>
         <div className="bg-bg min-h-screen text-ink font-sans selection:bg-accent selection:text-white overflow-x-clip w-full relative">
           <AmbientBackground />
+          <CustomCursor />
           <div className="relative z-10">
             <Navbar />
             <main>

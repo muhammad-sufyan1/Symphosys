@@ -22,12 +22,30 @@ export function CaseStudyPage() {
   useGSAP(
     () => {
       if (!study || !containerRef.current) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       gsap.from('.case-hero-item', {
         y: 40,
         opacity: 0,
         duration: 0.9,
         stagger: 0.1,
         ease: 'power3.out',
+      });
+
+      gsap.to('.case-hero-orb', {
+        xPercent: 6,
+        yPercent: -6,
+        duration: 12,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
+      });
+      gsap.to('.case-hero-orb-alt', {
+        xPercent: -6,
+        yPercent: 8,
+        duration: 15,
+        repeat: -1,
+        yoyo: true,
+        ease: 'sine.inOut',
       });
     },
     { scope: containerRef, dependencies: [study] },
@@ -43,7 +61,7 @@ export function CaseStudyPage() {
   );
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-bg text-ink pt-32 pb-24">
+    <div ref={containerRef} className="min-h-screen bg-bg text-ink pt-24 md:pt-28 pb-20 relative overflow-hidden">
       <SEO
         title={`${study.client} Case Study | Symphosys`}
         description={study.summary}
@@ -64,7 +82,12 @@ export function CaseStudyPage() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="case-hero-orb absolute -top-24 right-0 w-[40vw] h-[40vw] rounded-full bg-accent/10 blur-[110px]" />
+        <div className="case-hero-orb-alt absolute -bottom-24 left-0 w-[35vw] h-[35vw] rounded-full bg-ink/10 blur-[90px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7">
             <p className="case-hero-item text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">

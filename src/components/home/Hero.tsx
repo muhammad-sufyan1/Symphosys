@@ -12,6 +12,10 @@ export function Hero() {
   const { openBookingModal } = useBookingModal();
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const tl = gsap.timeline();
     tl.from('.hero-word', {
       y: 150,
@@ -57,10 +61,28 @@ export function Hero() {
       y: 80,
       ease: 'none'
     });
+
+    gsap.to('.hero-orb', {
+      xPercent: 8,
+      yPercent: -6,
+      duration: 14,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to('.hero-orb-alt', {
+      xPercent: -6,
+      yPercent: 8,
+      duration: 16,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
   }, { scope: container });
 
   return (
-    <section ref={container} className="relative min-h-[100svh] pt-32 md:pt-40 pb-32 flex flex-col justify-center overflow-hidden px-6 md:px-12 bg-bg">
+    <section ref={container} className="relative min-h-[100svh] pt-24 md:pt-28 pb-20 flex flex-col justify-center overflow-hidden px-6 md:px-12 bg-bg">
       
       {/* Premium Background Elements */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -73,8 +95,9 @@ export function Hero() {
         <div className="absolute top-0 bottom-0 right-[15%] w-[1px] bg-gradient-to-b from-transparent via-ink/10 to-transparent"></div>
         
         {/* Soft Glows */}
-        <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] rounded-full bg-accent/5 blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[40vw] h-[40vw] rounded-full bg-ink/5 blur-[80px]" />
+        <div className="hero-orb absolute top-[-10%] right-[-5%] w-[48vw] h-[48vw] rounded-full bg-accent/10 blur-[110px]" />
+        <div className="hero-orb-alt absolute bottom-[-12%] left-[-6%] w-[40vw] h-[40vw] rounded-full bg-ink/10 blur-[90px]" />
+        <div className="absolute top-[20%] left-[45%] w-32 h-32 rounded-full bg-accent/15 blur-[60px]" />
       </div>
 
       <div className="hero-content-wrapper max-w-7xl mx-auto w-full relative z-10 flex-1 flex flex-col justify-center">
@@ -107,7 +130,7 @@ export function Hero() {
       </div>
 
       {/* Marquees */}
-      <div className="hero-marquees relative mt-16 md:mt-24 -left-[5%] w-[110%] z-0 shrink-0 flex flex-col gap-2">
+      <div className="hero-marquees relative mt-10 md:mt-14 -left-[5%] w-[110%] z-0 shrink-0 hidden md:flex flex-col gap-2">
         {/* Bar 1: Accent (Right to Left) */}
         <div className="overflow-hidden py-3 bg-accent text-white rotate-[-2deg] shadow-lg">
           <div className="marquee-track-1 flex gap-6 items-center w-max">

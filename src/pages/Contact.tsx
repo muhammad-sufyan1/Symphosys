@@ -18,6 +18,10 @@ export function Contact() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     gsap.from('.contact-header', {
       y: 50,
       opacity: 0,
@@ -40,6 +44,24 @@ export function Contact() {
       duration: 1,
       ease: 'power3.out',
       delay: 0.5
+    });
+
+    gsap.to('.contact-orb', {
+      xPercent: 8,
+      yPercent: -6,
+      duration: 12,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to('.contact-orb-alt', {
+      xPercent: -7,
+      yPercent: 9,
+      duration: 15,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
     });
   }, { scope: container });
 
@@ -82,7 +104,7 @@ export function Contact() {
   };
 
   return (
-    <div ref={container} className="min-h-screen bg-bg text-ink pt-32 pb-24 selection:bg-accent selection:text-white">
+    <div ref={container} className="min-h-screen bg-bg text-ink pt-24 md:pt-28 pb-20 selection:bg-accent selection:text-white relative overflow-hidden">
       <SEO
         title="Contact Us | Symphosys"
         description="Contact Symphosys to discuss web development, digital marketing, branding, and growth strategy for your business."
@@ -98,7 +120,12 @@ export function Contact() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-6 md:px-12">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="contact-orb absolute -top-24 right-0 w-[40vw] h-[40vw] rounded-full bg-accent/10 blur-[110px]" />
+        <div className="contact-orb-alt absolute -bottom-24 left-0 w-[35vw] h-[35vw] rounded-full bg-ink/10 blur-[90px]" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24">
           
           {/* Left Column: Info */}

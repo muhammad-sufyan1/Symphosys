@@ -13,6 +13,10 @@ export function About() {
   const { openBookingModal } = useBookingModal();
 
   useGSAP(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const tl = gsap.timeline();
     tl.from('.about-hero-title', {
       y: 100,
@@ -40,10 +44,28 @@ export function About() {
         ease: 'power3.out'
       });
     });
+
+    gsap.to('.about-orb', {
+      xPercent: 7,
+      yPercent: -6,
+      duration: 12,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
+
+    gsap.to('.about-orb-alt', {
+      xPercent: -6,
+      yPercent: 8,
+      duration: 15,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut'
+    });
   }, { scope: container });
 
   return (
-    <div ref={container} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg pt-32">
+    <div ref={container} className="min-h-screen bg-bg text-ink selection:bg-ink selection:text-bg pt-24 md:pt-28">
       <SEO
         title="About Us | Symphosys"
         description="Learn how Symphosys builds integrated growth systems through strategy, creative execution, and performance marketing."
@@ -60,8 +82,12 @@ export function About() {
       />
 
       {/* Hero Section */}
-      <section className="px-6 md:px-12 pb-24 md:pb-32">
-        <div className="max-w-7xl mx-auto">
+      <section className="relative px-6 md:px-12 pb-20 md:pb-24 min-h-[70svh] flex items-center overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="about-orb absolute -top-20 right-0 w-[40vw] h-[40vw] rounded-full bg-accent/10 blur-[100px]" />
+          <div className="about-orb-alt absolute -bottom-20 left-0 w-[35vw] h-[35vw] rounded-full bg-ink/10 blur-[90px]" />
+        </div>
+        <div className="max-w-7xl mx-auto relative z-10">
           <h1 className="font-display text-5xl md:text-[8vw] leading-[0.85] uppercase tracking-tight mb-8">
             <span className="block about-hero-title">We Build</span>
             <span className="block about-hero-title text-accent">Digital Systems</span>

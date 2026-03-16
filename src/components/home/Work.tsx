@@ -387,7 +387,7 @@ export function Work() {
 
   return (
     <>
-      <section id="work" className="pt-32 pb-24 md:pt-36 md:pb-28 bg-bg text-ink relative overflow-hidden px-6 md:px-12">
+      <section id="work" className="pt-24 pb-20 md:pt-28 md:pb-24 bg-bg text-ink relative overflow-hidden px-6 md:px-12">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-10%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-accent/10 blur-[120px]" />
           <div className="absolute bottom-[-15%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-ink/5 blur-[120px]" />
