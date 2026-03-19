@@ -55,7 +55,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   service,
 }) => {
   return (
-    <article className="w-[320px] md:w-[360px] shrink-0 rounded-3xl border border-bg/20 bg-white/5 backdrop-blur-sm p-6">
+    <article className="w-full rounded-3xl border border-bg/20 bg-white/5 backdrop-blur-sm p-6">
       <div className="flex items-center gap-1 text-accent mb-4">
         {Array.from({ length: 5 }).map((_, index) => (
           <Star key={index} size={14} fill="currentColor" />
@@ -82,11 +82,6 @@ export function ClientReviewsSection() {
         return;
       }
 
-      const trackOne = sectionRef.current.querySelector('[data-review-track="one"]');
-      const trackTwo = sectionRef.current.querySelector('[data-review-track="two"]');
-      const orbOne = sectionRef.current.querySelector('[data-review-orb="one"]');
-      const orbTwo = sectionRef.current.querySelector('[data-review-orb="two"]');
-
       gsap.from('[data-review-headline]', {
         opacity: 0,
         y: 30,
@@ -94,16 +89,16 @@ export function ClientReviewsSection() {
         ease: 'power3.out',
       });
 
-      gsap.to(trackOne, { xPercent: -50, duration: 36, repeat: -1, ease: 'none' });
-      gsap.fromTo(trackTwo, { xPercent: -50 }, { xPercent: 0, duration: 40, repeat: -1, ease: 'none' });
-      gsap.to(orbOne, { xPercent: 8, yPercent: -8, scale: 1.08, duration: 11, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-      gsap.to(orbTwo, { xPercent: -7, yPercent: 9, scale: 1.1, duration: 13, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      gsap.from('[data-review-card]', {
+        opacity: 0,
+        y: 24,
+        duration: 0.7,
+        stagger: 0.08,
+        ease: 'power3.out',
+      });
     },
     { scope: sectionRef },
   );
-
-  const rowOne = [...reviews, ...reviews];
-  const rowTwo = [...reviews.slice(2), ...reviews.slice(0, 2), ...reviews.slice(2), ...reviews.slice(0, 2)];
 
   return (
     <section ref={sectionRef} className="relative bg-ink text-bg py-20 md:py-24 overflow-hidden border-t border-bg/10">
@@ -119,23 +114,43 @@ export function ClientReviewsSection() {
         </h2>
       </div>
 
-      <div className="space-y-5">
-        <div className="overflow-hidden">
-          <div data-review-track="one" className="flex gap-5 w-max px-6 md:px-12">
-            {rowOne.map((review, index) => (
-              <ReviewCard key={`one-${index}`} {...review} />
-            ))}
-          </div>
-        </div>
-
-        <div className="overflow-hidden">
-          <div data-review-track="two" className="flex gap-5 w-max px-6 md:px-12">
-            {rowTwo.map((review, index) => (
-              <ReviewCard key={`two-${index}`} {...review} />
-            ))}
-          </div>
+      <div className="px-6 md:px-12">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {reviews.map((review, index) => (
+            <div key={index} data-review-card>
+              <ReviewCard {...review} />
+            </div>
+          ))}
         </div>
       </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Symphosys',
+            url: 'https://symphosys.com',
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: '5',
+              bestRating: '5',
+              ratingCount: String(reviews.length),
+              reviewCount: String(reviews.length),
+            },
+            review: reviews.map((r) => ({
+              '@type': 'Review',
+              author: { '@type': 'Person', name: r.name },
+              reviewRating: {
+                '@type': 'Rating',
+                ratingValue: '5',
+                bestRating: '5',
+              },
+              reviewBody: r.quote,
+            })),
+          }),
+        }}
+      />
     </section>
   );
 }

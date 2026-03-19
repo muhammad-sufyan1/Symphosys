@@ -6,7 +6,8 @@ import bookCallHandler from "./api/book-call";
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 async function startServer() {
   const app = express();
@@ -20,7 +21,7 @@ async function startServer() {
     try {
       const { name, email, company, budget, message } = req.body;
 
-      if (!process.env.RESEND_API_KEY) {
+      if (!process.env.RESEND_API_KEY || !resend) {
         // If no API key, just simulate success for the demo
         console.warn("RESEND_API_KEY is not set. Simulating email send.");
         return res.json({ success: true, simulated: true });
@@ -163,7 +164,7 @@ async function startServer() {
     try {
       const { email } = req.body;
 
-      if (!process.env.RESEND_API_KEY) {
+      if (!process.env.RESEND_API_KEY || !resend) {
         console.warn("RESEND_API_KEY is not set. Simulating subscription.");
         return res.json({ success: true, simulated: true });
       }

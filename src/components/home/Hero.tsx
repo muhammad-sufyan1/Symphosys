@@ -39,18 +39,6 @@ export function Hero() {
       ease: 'back.out(1.5)'
     }, '-=0.6');
 
-    gsap.to('.marquee-track-1', {
-      xPercent: -50,
-      ease: 'none',
-      duration: 30,
-      repeat: -1
-    });
-    
-    gsap.fromTo('.marquee-track-2',
-      { xPercent: -50 },
-      { xPercent: 0, ease: 'none', duration: 30, repeat: -1 }
-    );
-
     gsap.to('.hero-marquees', {
       scrollTrigger: {
         trigger: container.current,
@@ -79,6 +67,7 @@ export function Hero() {
       yoyo: true,
       ease: 'sine.inOut'
     });
+
   }, { scope: container });
 
   return (
@@ -134,7 +123,7 @@ export function Hero() {
         {/* Bar 1: Accent (Right to Left) */}
         <div className="overflow-hidden py-3 bg-accent text-white rotate-[-2deg] shadow-lg">
           <div className="marquee-track-1 flex gap-6 items-center w-max">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <div key={i} className="flex gap-6 items-center whitespace-nowrap">
                 <span className="font-display text-2xl md:text-3xl uppercase text-white">Web Design</span>
                 <span className="w-2 h-2 rounded-full bg-white/50"></span>
@@ -152,7 +141,7 @@ export function Hero() {
         {/* Bar 2: Black (Left to Right) */}
         <div className="overflow-hidden py-3 bg-ink text-white rotate-[1deg] shadow-lg">
           <div className="marquee-track-2 flex gap-6 items-center w-max">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(4)].map((_, i) => (
               <div key={i} className="flex gap-6 items-center whitespace-nowrap">
                 <span className="font-display text-2xl md:text-3xl uppercase text-white">Data-Driven Results</span>
                 <span className="w-2 h-2 rounded-full bg-white/50"></span>

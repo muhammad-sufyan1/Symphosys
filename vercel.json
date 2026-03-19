@@ -1,24 +1,42 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:js|css|woff2?|ttf|eot|ico))",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:png|jpg|jpeg|gif|svg|webp))",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    }
+  ],
+  "trailingSlash": false,
+  "cleanUrls": true,
   "routes": [
     {
       "handle": "filesystem"
     },
     {
-      "src": "/$",
-      "dest": "/index.html"
-    },
-    {
       "src": "/(about|contact|work|case-studies|terms|privacy)$",
-      "dest": "/index.html"
+      "dest": "/$1/index.html"
     },
     {
       "src": "/services/(web-development|shopify-store-design|graphic-design|video-editing|video-animations|growth-marketing|lead-generation|brand-building|digital-marketing|creative-ads)$",
-      "dest": "/index.html"
+      "dest": "/services/$1/index.html"
     },
     {
       "src": "/case-studies/(web-development|shopify-store-design|graphic-design|video-editing|video-animations|growth-marketing|lead-generation|brand-building|digital-marketing|creative-ads)$",
-      "dest": "/index.html"
+      "dest": "/case-studies/$1/index.html"
     },
     {
       "src": "/(.*)",

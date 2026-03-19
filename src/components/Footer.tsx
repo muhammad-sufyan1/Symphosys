@@ -1,40 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { useGSAP } from '@gsap/react';
-import gsap from 'gsap';
 
 export function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const footerRef = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      if (!footerRef.current) {
-        return;
-      }
-
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        return;
-      }
-
-      const shapeOne = footerRef.current.querySelector('[data-footer-ambient="shape-1"]');
-      const shapeTwo = footerRef.current.querySelector('[data-footer-ambient="shape-2"]');
-      const bgLogo = footerRef.current.querySelector('[data-footer-ambient="logo"]');
-
-      const timeline = gsap.timeline({ repeat: -1, yoyo: true, defaults: { ease: 'sine.inOut' } });
-      timeline
-        .to(shapeOne, { xPercent: 8, yPercent: -7, scale: 1.07, duration: 10 }, 0)
-        .to(shapeTwo, { xPercent: -6, yPercent: 9, scale: 1.1, duration: 12 }, 0)
-        .to(bgLogo, { yPercent: 4, xPercent: -1.5, duration: 14 }, 0);
-
-      return () => {
-        timeline.kill();
-      };
-    },
-    { scope: footerRef },
-  );
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +32,7 @@ export function Footer() {
   };
 
   return (
-    <footer ref={footerRef} className="bg-accent text-white pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
+    <footer className="bg-accent text-white pt-24 pb-12 px-6 md:px-12 relative overflow-hidden">
       {/* Abstract background shapes */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
         <div data-footer-ambient="shape-1" className="absolute -top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-white blur-3xl"></div>
@@ -76,6 +46,8 @@ export function Footer() {
           src="/logo.svg" 
           alt="Symphosys Logo Background" 
           className="w-full h-full object-cover object-bottom brightness-0 invert translate-y-[25%]" 
+          loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -90,23 +62,24 @@ export function Footer() {
             </p>
 
             {/* Subscribe Form */}
-            <form onSubmit={handleSubscribe} className="max-w-md relative">
+            <form onSubmit={handleSubscribe} className="max-w-md relative" aria-label="Newsletter subscription">
               <h4 className="text-sm font-bold uppercase tracking-widest text-ink mb-4">Subscribe to our newsletter</h4>
               <div className="flex items-center border-b-2 border-white/20 pb-2 focus-within:border-ink transition-colors">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
+                <input
+                  type="email"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  aria-label="Email address"
                   className="w-full bg-transparent text-white placeholder:text-white/50 focus:outline-none text-lg"
                 />
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="shrink-0 text-white hover:text-ink transition-colors p-2"
                   aria-label="Subscribe"
                 >
-                  {isSubscribed ? <span className="text-sm font-bold uppercase tracking-wider text-ink">Done!</span> : <ArrowRight size={24} />}
+                  {isSubscribed ? <span role="status" aria-live="polite" className="text-sm font-bold uppercase tracking-wider text-ink">Done!</span> : <ArrowRight size={24} />}
                 </button>
               </div>
             </form>
@@ -153,6 +126,30 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'ProfessionalService',
+            name: 'Symphosys',
+            url: 'https://symphosys.com',
+            logo: 'https://symphosys.com/logo.png',
+            description:
+              'Full-service digital agency specializing in web development, digital marketing, branding, video, and lead generation.',
+            telephone: '+17789006780',
+            email: 'contact@symphosys.com',
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: '1443 SW 1200th Rd',
+              addressLocality: 'Holden',
+              addressRegion: 'MO',
+              addressCountry: 'US',
+            },
+            priceRange: '$$',
+          }),
+        }}
+      />
     </footer>
   );
 }

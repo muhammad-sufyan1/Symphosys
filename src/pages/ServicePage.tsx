@@ -55,47 +55,6 @@ export default function ServicePage() {
       ease: 'back.out(1.5)'
     }, '-=0.6');
 
-    gsap.to('.marquee-track-1', {
-      xPercent: -50,
-      ease: 'none',
-      duration: 30,
-      repeat: -1
-    });
-    
-    gsap.fromTo('.marquee-track-2',
-      { xPercent: -50 },
-      { xPercent: 0, ease: 'none', duration: 30, repeat: -1 }
-    );
-
-    gsap.to('.hero-marquees', {
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1
-      },
-      y: 80,
-      ease: 'none'
-    });
-
-    gsap.to('.service-orb', {
-      xPercent: 6,
-      yPercent: -5,
-      duration: 13,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-
-    gsap.to('.service-orb-alt', {
-      xPercent: -5,
-      yPercent: 7,
-      duration: 16,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-
     // Process Steps Parallax/Reveal
     const processSteps = gsap.utils.toArray('.process-step');
     processSteps.forEach((step: any) => {
@@ -112,21 +71,6 @@ export default function ServicePage() {
         }
       );
     });
-
-    // Included Items Stagger
-    gsap.fromTo('.included-item',
-      { y: 40, opacity: 0 },
-      {
-        y: 0, opacity: 1,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: '.included-grid',
-          start: 'top 80%',
-        }
-      }
-    );
 
     // FAQ Items Stagger
     const faqItems = gsap.utils.toArray('.faq-item');
@@ -218,7 +162,7 @@ export default function ServicePage() {
         description={seoDescription}
         keywords={service.focusKeywords}
         canonicalPath={`/services/${service.slug}`}
-        image="/logo.png"
+        image={caseStudies.find(cs => cs.slug === service.slug)?.heroImage || '/logo.png'}
         type="article"
         structuredData={[serviceSchema, faqSchema, breadcrumbSchema]}
       />
@@ -345,10 +289,10 @@ export default function ServicePage() {
       )}
 
       {/* 2. MINIMALIST INCLUDED GRID */}
-      <section className="py-32 px-6 md:px-12 bg-ink text-bg">
+      <section className="pt-24 pb-16 md:pt-28 md:pb-20 px-6 md:px-12 bg-bg text-ink">
         <div className="max-w-screen-2xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start mb-24 gap-8">
-            <h2 className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-bg/50 shrink-0">
+            <h2 className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-ink/50 shrink-0">
               01 // What's Included
             </h2>
             <h3 className="font-display text-4xl md:text-6xl uppercase max-w-3xl leading-[0.9]">
@@ -356,24 +300,39 @@ export default function ServicePage() {
             </h3>
           </div>
 
-          <div className="included-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20 border-t border-bg/20 pt-20">
+          <div
+            className="included-stack"
+            style={{ '--stack-count': service.included.items.length } as React.CSSProperties}
+          >
             {service.included.items.map((item, idx) => {
               const Icon = item.icon;
+              const indexLabel = String(idx + 1).padStart(2, '0');
               return (
-                <div key={idx} className="included-item group cursor-default">
-                  <div className="flex items-center justify-between mb-8 border-b border-bg/20 pb-6">
-                    <span className="font-display text-5xl text-bg/30 group-hover:text-accent transition-colors duration-500">
-                      0{idx + 1}
-                    </span>
-                    <Icon size={32} className="text-bg/30 group-hover:text-accent transition-colors duration-500" strokeWidth={1} />
+                <article
+                  key={idx}
+                  className="included-card"
+                  style={{ '--stack-index': idx, '--stack-depth': idx + 1 } as React.CSSProperties}
+                >
+                  <div className="included-card-header">
+                    <div className="included-card-badge">
+                      <span>{indexLabel}</span>
+                      <span className="included-card-dot" />
+                      <span className="included-card-label">Deliverable</span>
+                    </div>
+                    <div className="included-card-icon">
+                      <Icon size={22} strokeWidth={1.4} />
+                    </div>
                   </div>
-                  <h4 className="font-display text-3xl uppercase mb-4 group-hover:translate-x-2 transition-transform duration-500">
-                    {item.title}
-                  </h4>
-                  <p className="text-bg/70 text-lg leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
+
+                  <h4 className="included-card-title">{item.title}</h4>
+                  <p className="included-card-body">{item.description}</p>
+                  <span className="included-card-ghost">{indexLabel}</span>
+
+                  <div className="included-card-footer">
+                    <span className="included-card-rule" />
+                    <span className="included-card-meta">Included in every {formattedServiceName.toLowerCase()} engagement</span>
+                  </div>
+                </article>
               );
             })}
           </div>
@@ -381,42 +340,58 @@ export default function ServicePage() {
       </section>
 
       {study && (
-        <section className="py-24 md:py-32 px-6 md:px-12 bg-bg">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-6">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
-                Case Study Spotlight
-              </p>
-              <h2 className="font-display text-4xl md:text-5xl uppercase leading-[0.9] mb-6">
-                {study.client}
-              </h2>
-              <p className="text-lg text-ink/70 font-medium mb-6">{study.summary}</p>
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {study.impact.map((metric) => (
-                  <div key={metric.label} className="rounded-2xl border border-ink/10 bg-surface p-4">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-ink/50 font-bold mb-2">
-                      {metric.label}
-                    </p>
-                    <p className="font-display text-2xl uppercase">{metric.value}</p>
+        <section className="pt-10 pb-20 md:pt-12 md:pb-24 px-6 md:px-12 bg-bg">
+          <div className="max-w-7xl mx-auto">
+            <div className="relative overflow-hidden rounded-[36px] border border-ink/10 bg-[linear-gradient(140deg,rgba(255,106,61,0.12),rgba(247,242,232,0.96),rgba(239,229,212,0.96))] p-8 md:p-12">
+              <div className="absolute -top-24 right-0 w-64 h-64 rounded-full bg-accent/15 blur-[70px]" />
+              <div className="absolute -bottom-28 left-0 w-72 h-72 rounded-full bg-ink/10 blur-[90px]" />
+
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                <div className="lg:col-span-6">
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/60 mb-4">
+                    Case Study Spotlight
+                  </p>
+                  <h2 className="font-display text-4xl md:text-5xl uppercase leading-[0.9] mb-6">
+                    {study.client}
+                  </h2>
+                  <p className="text-lg text-ink/70 font-medium mb-8">
+                    {study.summary}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    {study.impact.map((metric) => (
+                      <div key={metric.label} className="rounded-2xl border border-ink/10 bg-white/80 p-4">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-ink/50 font-bold mb-2">
+                          {metric.label}
+                        </p>
+                        <p className="font-display text-2xl uppercase">{metric.value}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <Link
-                to={`/case-studies/${study.slug}`}
-                className="inline-flex items-center justify-center rounded-full bg-accent text-white px-8 py-4 text-sm font-bold uppercase tracking-[0.14em] transition-colors hover:bg-ink"
-              >
-                Read the Case Study
-              </Link>
-            </div>
-            <div className="lg:col-span-6">
-              <div className="rounded-3xl overflow-hidden border border-ink/10 bg-surface">
-                <img
-                  src={study.heroImage}
-                  alt={`${study.client} case study`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+
+                  <Link
+                    to={`/case-studies/${study.slug}`}
+                    className="inline-flex items-center justify-center rounded-full bg-ink text-bg px-8 py-4 text-sm font-bold uppercase tracking-[0.14em] transition-colors hover:bg-accent"
+                  >
+                    Read the Case Study
+                  </Link>
+                </div>
+
+                <div className="lg:col-span-6">
+                  <div className="rounded-[28px] overflow-hidden border border-ink/10 bg-white shadow-[0_25px_70px_-55px_rgba(27,26,22,0.5)]">
+                    <img
+                      src={study.heroImage}
+                      alt={`${study.client} case study`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-ink/60 font-bold">
+                    <span className="h-[1px] w-10 bg-ink/30" />
+                    {study.serviceName}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -585,6 +560,8 @@ export default function ServicePage() {
                   <button
                     className="w-full flex items-center justify-between p-6 md:p-8 text-left focus:outline-none"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
+                    aria-expanded={isOpen}
+                    aria-controls={`faq-panel-${index}`}
                   >
                     <span className="font-display text-xl md:text-3xl uppercase pr-4 md:pr-8">
                       {faq.question}
@@ -597,10 +574,14 @@ export default function ServicePage() {
                     </div>
                   </button>
                   
-                  <div className={cn(
+                  <div
+                    id={`faq-panel-${index}`}
+                    role="region"
+                    className={cn(
                       "grid transition-all duration-300 ease-in-out",
                       isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                    )}>
+                    )}
+                  >
                     <div className="overflow-hidden">
                       <p className={cn(
                         "p-6 md:p-8 pt-0 md:pt-0 text-base md:text-lg font-medium leading-relaxed max-w-3xl",

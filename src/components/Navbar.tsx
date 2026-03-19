@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react';
 import { Button } from './Button';
@@ -11,7 +11,37 @@ export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
+  const [focusedMenuIndex, setFocusedMenuIndex] = useState(-1);
   const { openBookingModal } = useBookingModal();
+  const servicesButtonRef = useRef<HTMLButtonElement>(null);
+  const menuItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
+  const closeMegaMenu = useCallback(() => {
+    setIsMegaMenuOpen(false);
+    setFocusedMenuIndex(-1);
+  }, []);
+
+  useEffect(() => {
+    if (focusedMenuIndex >= 0 && menuItemRefs.current[focusedMenuIndex]) {
+      menuItemRefs.current[focusedMenuIndex]?.focus();
+    }
+  }, [focusedMenuIndex]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isMegaMenuOpen) {
+          closeMegaMenu();
+          servicesButtonRef.current?.focus();
+        }
+        if (isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMegaMenuOpen, isMobileMenuOpen, closeMegaMenu]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,34 +90,63 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          <div 
+        <nav aria-label="Main navigation" className="hidden md:flex items-center gap-8">
+          <div
             className="relative group"
             onMouseEnter={() => setIsMegaMenuOpen(true)}
-            onMouseLeave={() => setIsMegaMenuOpen(false)}
+            onMouseLeave={() => { closeMegaMenu(); }}
           >
-            <button className={cn("flex items-center gap-1 text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors py-2", navTextColor)}>
+            <button
+              ref={servicesButtonRef}
+              aria-haspopup="menu"
+              aria-expanded={isMegaMenuOpen}
+              aria-controls="services-mega-menu"
+              className={cn("flex items-center gap-1 text-sm font-bold uppercase tracking-widest hover:text-accent transition-colors py-2", navTextColor)}
+              onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && isMegaMenuOpen) {
+                  e.preventDefault();
+                  setFocusedMenuIndex(0);
+                }
+              }}
+            >
               Services <ChevronDown size={16} className={cn("transition-transform duration-300", isMegaMenuOpen && "rotate-180")} />
             </button>
-            
+
             {/* Mega Menu Dropdown */}
-            <div className={cn(
-              "absolute top-full left-1/2 -translate-x-1/2 pt-6 transition-all duration-300",
-              isMegaMenuOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-4"
-            )}>
+            <div
+              id="services-mega-menu"
+              role="menu"
+              className={cn(
+                "absolute top-full left-1/2 -translate-x-1/2 pt-6 transition-all duration-300",
+                isMegaMenuOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible translate-y-4"
+              )}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setFocusedMenuIndex(prev => Math.min(prev + 1, servicesData.length - 1));
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setFocusedMenuIndex(prev => Math.max(prev - 1, 0));
+                }
+              }}
+            >
               <div className="w-[850px] bg-white rounded-3xl shadow-2xl border border-ink/5 p-8 grid grid-cols-2 gap-x-8 gap-y-6 relative overflow-hidden">
                 {/* Decorative background */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-ink/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-                
+
                 {servicesData.map((service, idx) => {
                   const Icon = service.icon;
                   return (
-                    <Link 
-                      key={idx} 
+                    <Link
+                      key={idx}
+                      ref={(el) => { menuItemRefs.current[idx] = el; }}
+                      role="menuitem"
+                      tabIndex={isMegaMenuOpen ? 0 : -1}
                       to={`/services/${service.slug}`}
                       className="group/item flex items-start gap-4 relative z-10 p-4 rounded-2xl hover:bg-bg/50 transition-colors duration-300"
-                      onClick={() => setIsMegaMenuOpen(false)}
+                      onClick={() => closeMegaMenu()}
                     >
                       <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0 group-hover/item:scale-110 group-hover/item:bg-accent group-hover/item:text-white transition-all duration-300">
                         {Icon && <Icon size={24} strokeWidth={1.5} />}
@@ -127,7 +186,8 @@ export function Navbar() {
         <button
           className={cn("md:hidden relative z-50 p-2 -mr-2 transition-colors duration-300", navTextColor)}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle Menu"
+          aria-label="Toggle menu"
+          aria-expanded={isMobileMenuOpen}
         >
           {isMobileMenuOpen ? <X size={32} className="text-ink" /> : <Menu size={32} />}
         </button>

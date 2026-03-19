@@ -31,22 +31,6 @@ export function CaseStudyPage() {
         ease: 'power3.out',
       });
 
-      gsap.to('.case-hero-orb', {
-        xPercent: 6,
-        yPercent: -6,
-        duration: 12,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
-      gsap.to('.case-hero-orb-alt', {
-        xPercent: -6,
-        yPercent: 8,
-        duration: 15,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-      });
     },
     { scope: containerRef, dependencies: [study] },
   );

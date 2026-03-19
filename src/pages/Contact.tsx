@@ -46,23 +46,6 @@ export function Contact() {
       delay: 0.5
     });
 
-    gsap.to('.contact-orb', {
-      xPercent: 8,
-      yPercent: -6,
-      duration: 12,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-
-    gsap.to('.contact-orb-alt', {
-      xPercent: -7,
-      yPercent: 9,
-      duration: 15,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
   }, { scope: container });
 
   const [errorMessage, setErrorMessage] = useState('');
@@ -259,21 +242,21 @@ export function Contact() {
                 </div>
 
                 <div className="pt-4">
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full md:w-auto text-lg px-12 py-5 flex items-center justify-center gap-3"
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full md:w-auto text-lg px-12 py-5 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Sending...' : isSuccess ? 'Message Sent!' : 'Send Message'}
                   </Button>
                   {isSuccess && (
-                    <p className="mt-4 text-sm text-accent font-medium">
+                    <p role="status" aria-live="polite" className="mt-4 text-sm text-accent font-medium">
                       Thank you! We've sent a confirmation email to your address.
                     </p>
                   )}
                   {errorMessage && (
-                    <p className="mt-4 text-sm text-red-500 font-medium p-4 bg-red-500/10 rounded-lg border border-red-500/20">
+                    <p role="alert" className="mt-4 text-sm text-red-500 font-medium p-4 bg-red-500/10 rounded-lg border border-red-500/20">
                       {errorMessage}
                     </p>
                   )}

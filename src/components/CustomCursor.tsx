@@ -8,6 +8,11 @@ export function CustomCursor() {
     const cursor = cursorRef.current;
     if (!cursor) return;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cursor.style.display = 'none';
+      return;
+    }
+
     // Only show on non-touch devices
     if (window.matchMedia('(pointer: coarse)').matches) {
       cursor.style.display = 'none';
@@ -43,26 +48,29 @@ export function CustomCursor() {
       });
     };
 
-    const attachHoverEvents = () => {
-      document.querySelectorAll('a, button').forEach(el => {
-        el.addEventListener('mouseenter', handleHover);
-        el.addEventListener('mouseleave', handleLeave);
-      });
+    const handlePointerOver = (event: Event) => {
+      const target = event.target as Element | null;
+      if (!target) return;
+      if (target.closest('a, button')) {
+        handleHover();
+      }
     };
 
-    attachHoverEvents();
+    const handlePointerOut = (event: Event) => {
+      const target = event.target as Element | null;
+      if (!target) return;
+      if (target.closest('a, button')) {
+        handleLeave();
+      }
+    };
 
-    // Re-attach on route changes or dynamic content
-    const observer = new MutationObserver(attachHoverEvents);
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('pointerover', handlePointerOver);
+    document.addEventListener('pointerout', handlePointerOut);
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
-      observer.disconnect();
-      document.querySelectorAll('a, button').forEach(el => {
-        el.removeEventListener('mouseenter', handleHover);
-        el.removeEventListener('mouseleave', handleLeave);
-      });
+      document.removeEventListener('pointerover', handlePointerOver);
+      document.removeEventListener('pointerout', handlePointerOut);
     };
   }, []);
 

@@ -21,11 +21,8 @@ export function ConsultationCtaBox() {
 
   useGSAP(
     () => {
-      if (!sectionRef.current) {
-        return;
-      }
-
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (!sectionRef.current) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
       gsap.fromTo(
         '.consultation-cta-shell',
@@ -67,46 +64,6 @@ export function ConsultationCtaBox() {
         },
       );
 
-      if (prefersReducedMotion) {
-        return;
-      }
-
-      gsap.to('.consultation-ring-1', {
-        rotate: 360,
-        duration: 28,
-        ease: 'none',
-        repeat: -1,
-        transformOrigin: '50% 50%',
-      });
-
-      gsap.to('.consultation-ring-2', {
-        rotate: -360,
-        duration: 34,
-        ease: 'none',
-        repeat: -1,
-        transformOrigin: '50% 50%',
-      });
-
-      gsap.to('.consultation-beam', {
-        opacity: 0.38,
-        scale: 1.08,
-        duration: 3.2,
-        yoyo: true,
-        repeat: -1,
-        ease: 'sine.inOut',
-      });
-
-      gsap.utils.toArray('.consultation-orbit').forEach((icon, index) => {
-        gsap.to(icon as Element, {
-          y: index % 2 === 0 ? -12 : 12,
-          x: index % 2 === 0 ? 8 : -8,
-          rotate: index % 2 === 0 ? 8 : -8,
-          duration: 2.8 + index * 0.45,
-          yoyo: true,
-          repeat: -1,
-          ease: 'sine.inOut',
-        });
-      });
     },
     { scope: sectionRef },
   );
@@ -115,7 +72,7 @@ export function ConsultationCtaBox() {
     <section ref={sectionRef} className="relative px-6 md:px-12 py-20 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto flex justify-center">
         <div className="consultation-cta-shell relative w-full max-w-5xl">
-          <div className="rounded-[36px] bg-[linear-gradient(140deg,rgba(255,87,34,0.7),rgba(28,27,23,0.72),rgba(255,87,34,0.45))] p-[1px] shadow-[0_30px_80px_rgba(0,0,0,0.23)]">
+          <div className="rounded-[36px] bg-[linear-gradient(140deg,rgba(255,106,61,0.7),rgba(28,27,23,0.72),rgba(255,106,61,0.45))] p-[1px] shadow-[0_30px_80px_rgba(0,0,0,0.23)]">
             <div className="relative rounded-[35px] bg-ink text-bg overflow-hidden">
               <div className="consultation-beam absolute -top-[38%] left-[36%] h-[180%] w-[30%] rotate-[18deg] bg-gradient-to-b from-accent/45 via-accent/10 to-transparent blur-[34px] opacity-25" />
 

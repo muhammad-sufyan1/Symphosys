@@ -45,23 +45,6 @@ export function About() {
       });
     });
 
-    gsap.to('.about-orb', {
-      xPercent: 7,
-      yPercent: -6,
-      duration: 12,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
-
-    gsap.to('.about-orb-alt', {
-      xPercent: -6,
-      yPercent: 8,
-      duration: 15,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut'
-    });
   }, { scope: container });
 
   return (
@@ -119,11 +102,15 @@ export function About() {
             </div>
           </div>
           <div className="fade-up relative h-[600px] rounded-[40px] overflow-hidden bg-ink">
-            <img 
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-              alt="Our Team" 
+            <img
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+              alt="Our Team"
+              width={1200}
+              height={800}
               className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity"
               referrerPolicy="no-referrer"
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
           </div>

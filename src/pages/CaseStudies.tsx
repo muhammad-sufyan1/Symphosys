@@ -13,22 +13,6 @@ export function CaseStudiesPage() {
       return;
     }
     gsap.from('.case-studies-hero', { y: 30, opacity: 0, duration: 0.8, ease: 'power3.out' });
-    gsap.to('.case-studies-orb', {
-      xPercent: 6,
-      yPercent: -6,
-      duration: 13,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    });
-    gsap.to('.case-studies-orb-alt', {
-      xPercent: -6,
-      yPercent: 8,
-      duration: 15,
-      repeat: -1,
-      yoyo: true,
-      ease: 'sine.inOut',
-    });
   }, { scope: containerRef });
 
   return (
