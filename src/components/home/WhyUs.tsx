@@ -17,37 +17,56 @@ export function WhyUs() {
   const container = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    const cards = gsap.utils.toArray('.reason-card');
-    cards.forEach((card: any, i) => {
-      gsap.from(card, {
-        scrollTrigger: {
-          trigger: card,
-          start: 'top 85%',
-        },
-        y: 60,
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const rows = gsap.utils.toArray('.reason-row');
+    rows.forEach((row: any, i) => {
+      gsap.from(row, {
+        scrollTrigger: { trigger: row, start: 'top 88%' },
+        y: 30,
         opacity: 0,
-        scale: 0.95,
-        duration: 0.8,
+        duration: 0.6,
+        delay: i * 0.08,
         ease: 'power3.out'
       });
     });
   }, { scope: container });
 
   return (
-    <section ref={container} className="py-20 md:py-28 px-6 md:px-12 bg-bg overflow-visible">
-      <div className="container mx-auto max-w-7xl flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
-        <div className="lg:w-1/2 relative lg:sticky lg:top-32 z-10 h-fit">
-          <h2 className="font-display text-4xl md:text-6xl uppercase leading-none mb-4 md:mb-6 break-words">Why <br/> <span className="text-accent">Us?</span></h2>
-          <p className="text-base md:text-lg font-medium max-w-md text-ink/80">We're not here to just run campaigns — we're here to grow your business.</p>
+    <section ref={container} className="py-20 md:py-28 px-6 md:px-12 bg-bg overflow-hidden">
+      <div className="container mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="mb-16 md:mb-24">
+          <h2 className="font-display text-4xl md:text-7xl uppercase leading-[0.85]">
+            Why <span className="text-accent">Us?</span>
+          </h2>
+          <p className="mt-6 text-lg md:text-xl font-medium max-w-2xl text-ink/60 leading-relaxed">
+            We're not here to just run campaigns — we're here to grow your business.
+          </p>
         </div>
-        <div className="lg:w-1/2 space-y-6 md:space-y-8">
+
+        {/* Editorial rows */}
+        <div className="border-b border-ink/10">
           {reasons.map((reason, index) => (
-            <div key={index} className="reason-card bg-surface p-6 md:p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-accent text-white flex items-center justify-center font-display text-2xl md:text-3xl mb-6">
-                {index + 1}
+            <div
+              key={index}
+              className="reason-row group border-t border-ink/10 py-8 md:py-12 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-12 items-start cursor-default"
+            >
+              <div className="md:col-span-1">
+                <span className="font-display text-4xl md:text-5xl text-accent/25 group-hover:text-accent transition-colors duration-500 leading-none">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
               </div>
-              <h3 className="font-display text-2xl md:text-3xl uppercase mb-3 md:mb-4">{reason.title}</h3>
-              <p className="text-sm md:text-lg font-medium leading-relaxed text-ink/80">{reason.desc}</p>
+              <div className="md:col-span-4">
+                <h3 className="font-display text-2xl md:text-3xl uppercase group-hover:text-accent transition-colors duration-500">
+                  {reason.title}
+                </h3>
+              </div>
+              <div className="md:col-span-7">
+                <p className="text-base md:text-lg text-ink/60 font-medium leading-relaxed">
+                  {reason.desc}
+                </p>
+              </div>
             </div>
           ))}
         </div>

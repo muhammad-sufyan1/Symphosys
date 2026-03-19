@@ -16,43 +16,84 @@ export function Process() {
   const container = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    const items = gsap.utils.toArray('.process-item');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const items = gsap.utils.toArray('.process-node');
     items.forEach((item: any, i) => {
       gsap.from(item, {
-        scrollTrigger: {
-          trigger: item,
-          start: 'top 85%',
-        },
-        x: i % 2 === 0 ? -100 : 100,
+        scrollTrigger: { trigger: item, start: 'top 85%' },
+        y: 40,
         opacity: 0,
-        scale: 0.9,
-        rotation: i % 2 === 0 ? -5 : 5,
-        duration: 1.2,
-        ease: 'elastic.out(1, 0.7)'
+        duration: 0.7,
+        delay: i * 0.1,
+        ease: 'power3.out'
       });
     });
-
   }, { scope: container });
 
   return (
     <section ref={container} className="py-20 md:py-28 px-6 md:px-12 bg-ink text-bg overflow-hidden">
       <div className="container mx-auto max-w-7xl">
-        <h2 className="font-display text-4xl md:text-6xl uppercase text-center mb-16 md:mb-24 break-words">Our <span className="text-accent">Process</span></h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12 md:gap-y-16">
-          {steps.map((step, index) => (
-            <div key={index} className="process-item relative bg-surface text-ink p-6 md:p-10 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 z-10">
-              <div className="relative z-10">
-                <div className="relative inline-block mb-3 md:mb-5">
-                  <div className="process-num absolute top-1/2 left-0 -translate-y-1/2 -translate-x-2 md:-translate-x-4 font-display text-6xl md:text-[90px] text-accent opacity-20 leading-none z-0 select-none">
-                    {step.num}
+        <div className="text-center mb-16 md:mb-24">
+          <h2 className="font-display text-4xl md:text-6xl uppercase">
+            Our <span className="text-accent">Process</span>
+          </h2>
+        </div>
+
+        {/* Desktop: Horizontal connected timeline */}
+        <div className="hidden md:block">
+          <div className="relative">
+            {/* Horizontal connecting line */}
+            <div className="absolute top-8 left-[calc(12.5%)] right-[calc(12.5%)] h-px bg-gradient-to-r from-accent/30 via-white/[0.08] to-accent/30" />
+
+            <div className="grid grid-cols-4 gap-6 lg:gap-10">
+              {steps.map((step, index) => (
+                <div key={index} className="process-node group relative text-center">
+                  {/* Node circle */}
+                  <div className="relative z-10 w-16 h-16 rounded-full border-2 border-accent/30 bg-ink flex items-center justify-center mx-auto mb-8 transition-all duration-500 group-hover:border-accent group-hover:shadow-[0_0_24px_rgba(255,106,61,0.15)]">
+                    <span className="font-display text-lg text-accent/60 group-hover:text-accent transition-colors duration-500">
+                      {step.num}
+                    </span>
                   </div>
-                  <h3 className="font-display text-2xl md:text-3xl uppercase relative z-10 pl-2 md:pl-4">{step.title}</h3>
+
+                  <h3 className="font-display text-2xl md:text-3xl uppercase mb-4 group-hover:text-accent transition-colors duration-500">
+                    {step.title}
+                  </h3>
+                  <p className="text-bg/45 font-medium leading-relaxed text-sm lg:text-base">
+                    {step.desc}
+                  </p>
                 </div>
-                <p className="text-sm md:text-lg font-medium leading-relaxed text-ink/80">{step.desc}</p>
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
+        </div>
+
+        {/* Mobile: Vertical connected timeline */}
+        <div className="md:hidden relative">
+          {/* Vertical connecting line */}
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-accent/30 via-white/[0.08] to-transparent" />
+
+          <div className="space-y-12">
+            {steps.map((step, index) => (
+              <div key={index} className="process-node group flex gap-8 items-start">
+                {/* Node circle */}
+                <div className="relative z-10 shrink-0 w-12 h-12 rounded-full border-2 border-accent/30 bg-ink flex items-center justify-center transition-all duration-500 group-hover:border-accent">
+                  <span className="font-display text-base text-accent/60 group-hover:text-accent transition-colors duration-500">
+                    {step.num}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-display text-2xl uppercase mb-3 group-hover:text-accent transition-colors duration-500">
+                    {step.title}
+                  </h3>
+                  <p className="text-bg/45 font-medium leading-relaxed">
+                    {step.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

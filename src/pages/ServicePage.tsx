@@ -55,21 +55,52 @@ export default function ServicePage() {
       ease: 'back.out(1.5)'
     }, '-=0.6');
 
-    // Process Steps Parallax/Reveal
+    // Bento cards stagger reveal
+    const bentoCards = gsap.utils.toArray('.bento-card');
+    bentoCards.forEach((card: any, i) => {
+      gsap.from(card, {
+        scrollTrigger: { trigger: card, start: 'top 88%' },
+        y: 40, opacity: 0,
+        duration: 0.7,
+        delay: i * 0.06,
+        ease: 'power3.out',
+      });
+    });
+
+    // Why Symphosys rows
+    const whySymRows = gsap.utils.toArray('.why-sym-row');
+    whySymRows.forEach((row: any, i) => {
+      gsap.from(row, {
+        scrollTrigger: { trigger: row, start: 'top 88%' },
+        y: 30, opacity: 0,
+        duration: 0.6,
+        delay: i * 0.1,
+        ease: 'power3.out',
+      });
+    });
+
+    // Why Choose Us cells
+    const whyChooseCells = gsap.utils.toArray('.why-choose-cell');
+    whyChooseCells.forEach((cell: any, i) => {
+      gsap.from(cell, {
+        scrollTrigger: { trigger: cell, start: 'top 88%' },
+        y: 30, opacity: 0,
+        duration: 0.6,
+        delay: i * 0.1,
+        ease: 'power3.out',
+      });
+    });
+
+    // Process Steps Reveal
     const processSteps = gsap.utils.toArray('.process-step');
-    processSteps.forEach((step: any) => {
-      gsap.fromTo(step,
-        { y: 50, opacity: 0 },
-        {
-          y: 0, opacity: 1,
-          duration: 1,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: step,
-            start: 'top 85%',
-          }
-        }
-      );
+    processSteps.forEach((step: any, i) => {
+      gsap.from(step, {
+        scrollTrigger: { trigger: step, start: 'top 85%' },
+        x: -30, opacity: 0,
+        duration: 0.7,
+        delay: i * 0.08,
+        ease: 'power3.out',
+      });
     });
 
     // FAQ Items Stagger
@@ -259,28 +290,43 @@ export default function ServicePage() {
       </section>
 
       {enhancement?.whyChooseSymphosys && (
-        <section className="py-24 md:py-32 px-6 md:px-12 bg-surface relative overflow-hidden">
-          <div className="absolute -top-20 right-0 w-[40vw] h-[40vw] rounded-full bg-accent/10 blur-[120px] pointer-events-none"></div>
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start relative z-10">
-            <div className="lg:col-span-5">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-ink/50 mb-4">
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-bg overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-16 md:mb-20">
+              <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-ink/40 mb-5">
                 Why Symphosys
               </p>
-              <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9] mb-6">
+              <h2 className="font-display text-4xl md:text-7xl uppercase leading-[0.85] max-w-5xl">
                 {enhancement.whyChooseSymphosys.headline}
               </h2>
-              <p className="text-lg text-ink/70 font-medium leading-relaxed">
+              <p className="mt-6 text-lg md:text-xl text-ink/60 font-medium max-w-2xl leading-relaxed">
                 {enhancement.whyChooseSymphosys.intro}
               </p>
             </div>
-            <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Editorial feature rows */}
+            <div className="border-b border-ink/10">
               {enhancement.whyChooseSymphosys.points.map((point, index) => (
-                <div key={point.title} className="rounded-3xl border border-ink/10 bg-white p-6">
-                  <p className="text-xs uppercase tracking-[0.2em] text-ink/40 font-bold mb-3">
-                    0{index + 1}
-                  </p>
-                  <h3 className="font-display text-2xl uppercase mb-3">{point.title}</h3>
-                  <p className="text-ink/70 font-medium">{point.body}</p>
+                <div
+                  key={point.title}
+                  className="why-sym-row group border-t border-ink/10 py-8 md:py-12 grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-12 items-start cursor-default"
+                >
+                  <div className="md:col-span-1">
+                    <span className="font-display text-4xl md:text-5xl text-accent/25 group-hover:text-accent transition-colors duration-500 leading-none">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="md:col-span-4">
+                    <h3 className="font-display text-2xl md:text-3xl uppercase group-hover:text-accent transition-colors duration-500">
+                      {point.title}
+                    </h3>
+                  </div>
+                  <div className="md:col-span-7">
+                    <p className="text-base md:text-lg text-ink/60 font-medium leading-relaxed">
+                      {point.body}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -288,49 +334,59 @@ export default function ServicePage() {
         </section>
       )}
 
-      {/* 2. MINIMALIST INCLUDED GRID */}
-      <section className="pt-24 pb-16 md:pt-28 md:pb-20 px-6 md:px-12 bg-bg text-ink">
-        <div className="max-w-screen-2xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start mb-24 gap-8">
-            <h2 className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-ink/50 shrink-0">
-              01 // What's Included
-            </h2>
-            <h3 className="font-display text-4xl md:text-6xl uppercase max-w-3xl leading-[0.9]">
+      {/* 2. BENTO FEATURE GRID — WHAT'S INCLUDED */}
+      <section className="py-24 md:py-32 px-6 md:px-12 bg-ink text-bg overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16 md:mb-24">
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-bg/40 mb-5">
+              What's Included
+            </p>
+            <h3 className="font-display text-4xl md:text-6xl uppercase max-w-4xl leading-[0.85]">
               {service.included.subtitle}
             </h3>
           </div>
 
-          <div
-            className="included-stack"
-            style={{ '--stack-count': service.included.items.length } as React.CSSProperties}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
             {service.included.items.map((item, idx) => {
               const Icon = item.icon;
               const indexLabel = String(idx + 1).padStart(2, '0');
+              const isFeature = idx === 0;
+
               return (
                 <article
                   key={idx}
-                  className="included-card"
-                  style={{ '--stack-index': idx, '--stack-depth': idx + 1 } as React.CSSProperties}
+                  className={cn(
+                    "bento-card group relative rounded-[24px] border border-white/[0.06] bg-white/[0.03] p-7 md:p-9 transition-all duration-500 hover:border-accent/25 hover:bg-white/[0.06]",
+                    isFeature && "md:col-span-2 md:flex md:gap-10 md:items-start"
+                  )}
                 >
-                  <div className="included-card-header">
-                    <div className="included-card-badge">
-                      <span>{indexLabel}</span>
-                      <span className="included-card-dot" />
-                      <span className="included-card-label">Deliverable</span>
-                    </div>
-                    <div className="included-card-icon">
-                      <Icon size={22} strokeWidth={1.4} />
-                    </div>
+                  {/* Top accent glow line on hover */}
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent rounded-t-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Ghost number */}
+                  <span className="absolute top-6 right-7 font-display text-7xl md:text-8xl text-white/[0.03] select-none pointer-events-none leading-none group-hover:text-white/[0.06] transition-colors duration-700">
+                    {indexLabel}
+                  </span>
+
+                  {/* Icon */}
+                  <div className={cn(
+                    "shrink-0 w-14 h-14 rounded-2xl border border-accent/20 bg-accent/10 flex items-center justify-center text-accent mb-6 transition-all duration-500 group-hover:bg-accent/20 group-hover:border-accent/40 group-hover:shadow-[0_0_20px_rgba(255,106,61,0.1)]",
+                    isFeature && "md:mb-0 md:mt-1"
+                  )}>
+                    <Icon size={24} strokeWidth={1.5} />
                   </div>
 
-                  <h4 className="included-card-title">{item.title}</h4>
-                  <p className="included-card-body">{item.description}</p>
-                  <span className="included-card-ghost">{indexLabel}</span>
-
-                  <div className="included-card-footer">
-                    <span className="included-card-rule" />
-                    <span className="included-card-meta">Included in every {formattedServiceName.toLowerCase()} engagement</span>
+                  {/* Content */}
+                  <div className="relative z-10">
+                    <h4 className="font-display text-xl md:text-2xl uppercase mb-3 group-hover:text-accent transition-colors duration-500">
+                      {item.title}
+                    </h4>
+                    <p className={cn(
+                      "text-bg/45 font-medium leading-relaxed",
+                      isFeature ? "max-w-xl text-base" : "text-sm md:text-base"
+                    )}>
+                      {item.description}
+                    </p>
                   </div>
                 </article>
               );
@@ -401,27 +457,38 @@ export default function ServicePage() {
       <ConsultationCtaBox />
 
       {enhancement?.whyChooseService && (
-        <section className="py-24 md:py-32 px-6 md:px-12 bg-ink text-bg">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            <div className="lg:col-span-5">
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-bg/60 mb-4">
+        <section className="py-24 md:py-32 px-6 md:px-12 bg-ink text-bg overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-16 md:mb-20">
+              <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-bg/40 mb-5">
                 Why Choose Us
               </p>
-              <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.9] mb-6">
+              <h2 className="font-display text-4xl md:text-6xl uppercase leading-[0.85] max-w-4xl">
                 {enhancement.whyChooseService.headline}
               </h2>
-              <p className="text-lg text-bg/80 font-medium leading-relaxed">
+              <p className="mt-6 text-lg text-bg/50 font-medium max-w-2xl leading-relaxed">
                 {enhancement.whyChooseService.intro}
               </p>
             </div>
-            <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px rounded-[28px] overflow-hidden border border-white/[0.06]">
               {enhancement.whyChooseService.points.map((point, index) => (
-                <div key={point.title} className="rounded-3xl border border-bg/20 bg-white/5 p-6">
-                  <p className="text-xs uppercase tracking-[0.2em] text-bg/50 font-bold mb-3">
-                    0{index + 1}
-                  </p>
-                  <h3 className="font-display text-2xl uppercase mb-3">{point.title}</h3>
-                  <p className="text-bg/70 font-medium">{point.body}</p>
+                <div
+                  key={point.title}
+                  className="why-choose-cell group relative bg-ink p-8 md:p-10 transition-colors duration-500 hover:bg-white/[0.04]"
+                >
+                  {/* Accent draw line at top */}
+                  <div className="absolute inset-x-0 top-0 h-[2px] bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                  {/* Subtle divider */}
+                  <div className="absolute inset-y-4 right-0 w-px bg-white/[0.06] last:hidden" />
+
+                  <span className="block font-display text-6xl md:text-7xl text-white/[0.05] group-hover:text-accent/20 transition-colors duration-500 leading-none">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <h3 className="font-display text-xl md:text-2xl uppercase mt-5 mb-4 group-hover:text-accent transition-colors duration-500">
+                    {point.title}
+                  </h3>
+                  <p className="text-bg/50 font-medium leading-relaxed">{point.body}</p>
                 </div>
               ))}
             </div>
@@ -501,46 +568,48 @@ export default function ServicePage() {
         </section>
       )}
 
-      {/* 3. STICKY PROCESS TIMELINE */}
-      <section className="py-32 px-6 md:px-12 relative bg-bg text-ink">
-        <div className="max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
-          
-          {/* Sticky Left Column */}
-          <div className="lg:col-span-5 relative">
-            <div className="lg:sticky lg:top-32">
-              <h2 className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-ink/50 mb-8">
-                02 // The Process
-              </h2>
-              <h3 className="font-display text-[12vw] lg:text-[7vw] leading-[0.8] uppercase tracking-tighter mb-8">
-                How We<br/>Work
-              </h3>
-              <p className="text-xl font-medium text-ink/70 max-w-md">
-                {service.process.subtitle}
-              </p>
+      {/* 3. PROCESS — CONNECTED NODE TIMELINE */}
+      <section className="py-28 md:py-36 px-6 md:px-12 bg-ink text-bg overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20 md:mb-28">
+            <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold text-bg/40 mb-5">
+              The Process
+            </p>
+            <h3 className="font-display text-5xl md:text-7xl uppercase leading-[0.85]">
+              How We Work
+            </h3>
+            <p className="mt-6 text-lg md:text-xl text-bg/50 font-medium max-w-2xl mx-auto leading-relaxed">
+              {service.process.subtitle}
+            </p>
+          </div>
+
+          <div className="relative max-w-4xl mx-auto">
+            {/* Vertical connecting line */}
+            <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-gradient-to-b from-accent/30 via-white/[0.08] to-transparent" />
+
+            <div className="space-y-16 md:space-y-20">
+              {service.process.items.map((item, idx) => (
+                <div key={idx} className="process-step group relative flex gap-8 md:gap-14 items-start">
+                  {/* Node circle */}
+                  <div className="relative z-10 shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-accent/30 bg-ink flex items-center justify-center transition-all duration-500 group-hover:border-accent group-hover:shadow-[0_0_24px_rgba(255,106,61,0.15)]">
+                    <span className="font-display text-base md:text-lg text-accent/60 group-hover:text-accent transition-colors duration-500">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="pt-1 md:pt-2 pb-2">
+                    <h4 className="font-display text-2xl md:text-4xl uppercase mb-4 transition-colors duration-500 group-hover:text-accent">
+                      {item.title}
+                    </h4>
+                    <p className="text-base md:text-lg text-bg/50 leading-relaxed max-w-2xl font-medium">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Scrolling Right Column */}
-          <div className="lg:col-span-7 mt-16 lg:mt-0 space-y-32">
-            {service.process.items.map((item, idx) => (
-              <div key={idx} className="process-step relative">
-                {/* Massive Background Number */}
-                <div className="absolute -left-8 -top-16 text-[150px] md:text-[200px] font-display text-ink/[0.03] pointer-events-none leading-none select-none">
-                  0{idx + 1}
-                </div>
-                
-                <div className="relative z-10 border-l-2 border-ink/10 pl-8 md:pl-12 py-4 hover:border-accent transition-colors duration-500">
-                  <h4 className="font-display text-4xl md:text-5xl uppercase mb-6">
-                    {item.title}
-                  </h4>
-                  <p className="text-xl text-ink/70 leading-relaxed max-w-xl">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
         </div>
       </section>
 
