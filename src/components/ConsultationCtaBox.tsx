@@ -83,16 +83,16 @@ export function ConsultationCtaBox() {
               <div className="consultation-ring-1 pointer-events-none absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-bg/10" />
               <div className="consultation-ring-2 pointer-events-none absolute left-1/2 top-1/2 h-[92%] w-[92%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/20" />
 
-              <div className="absolute -left-4 md:left-6 top-12 consultation-orbit bg-bg/10 border border-bg/15 backdrop-blur-md rounded-2xl p-3">
+              <div className="absolute -left-4 md:left-6 top-12 consultation-orbit bg-bg/10 border border-bg/15 rounded-2xl p-3">
                 <Rocket className="w-5 h-5 text-accent" />
               </div>
-              <div className="absolute right-5 md:right-10 top-9 consultation-orbit bg-bg/10 border border-bg/15 backdrop-blur-md rounded-2xl p-3">
+              <div className="absolute right-5 md:right-10 top-9 consultation-orbit bg-bg/10 border border-bg/15 rounded-2xl p-3">
                 <Sparkles className="w-5 h-5 text-accent" />
               </div>
-              <div className="absolute left-8 md:left-16 bottom-16 consultation-orbit bg-bg/10 border border-bg/15 backdrop-blur-md rounded-2xl p-3">
+              <div className="absolute left-8 md:left-16 bottom-16 consultation-orbit bg-bg/10 border border-bg/15 rounded-2xl p-3">
                 <ChartNoAxesCombined className="w-5 h-5 text-accent" />
               </div>
-              <div className="absolute right-8 md:right-16 bottom-14 consultation-orbit bg-bg/10 border border-bg/15 backdrop-blur-md rounded-2xl p-3">
+              <div className="absolute right-8 md:right-16 bottom-14 consultation-orbit bg-bg/10 border border-bg/15 rounded-2xl p-3">
                 <Globe className="w-5 h-5 text-accent" />
               </div>
 

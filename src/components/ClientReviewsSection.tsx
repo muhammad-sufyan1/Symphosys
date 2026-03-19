@@ -55,7 +55,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   service,
 }) => {
   return (
-    <article className="w-full rounded-3xl border border-bg/20 bg-white/5 backdrop-blur-sm p-6">
+    <article className="w-full rounded-3xl border border-bg/20 bg-white/5 p-6">
       <div className="flex items-center gap-1 text-accent mb-4">
         {Array.from({ length: 5 }).map((_, index) => (
           <Star key={index} size={14} fill="currentColor" />

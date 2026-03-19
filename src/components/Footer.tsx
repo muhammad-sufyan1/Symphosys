@@ -40,7 +40,7 @@ export function Footer() {
       </div>
 
       {/* Large Background Logo */}
-      <div className="absolute bottom-0 left-0 w-full h-1/2 pointer-events-none flex justify-center items-end opacity-20 mix-blend-overlay">
+      <div className="absolute bottom-0 left-0 w-full h-1/2 pointer-events-none flex justify-center items-end opacity-20">
         <img 
           data-footer-ambient="logo"
           src="/logo.svg" 

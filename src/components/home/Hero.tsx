@@ -43,11 +43,11 @@ export function Hero() {
       scrollTrigger: {
         trigger: container.current,
         start: 'top top',
-        end: 'bottom top',
-        scrub: 1
+        toggleActions: 'play none none none',
       },
       y: 80,
-      ease: 'none'
+      duration: 1.5,
+      ease: 'power2.out'
     });
 
     gsap.to('.hero-orb', {
@@ -84,9 +84,9 @@ export function Hero() {
         <div className="absolute top-0 bottom-0 right-[15%] w-[1px] bg-gradient-to-b from-transparent via-ink/10 to-transparent"></div>
         
         {/* Soft Glows */}
-        <div className="hero-orb absolute top-[-10%] right-[-5%] w-[48vw] h-[48vw] rounded-full bg-accent/10 blur-[110px]" />
-        <div className="hero-orb-alt absolute bottom-[-12%] left-[-6%] w-[40vw] h-[40vw] rounded-full bg-ink/10 blur-[90px]" />
-        <div className="absolute top-[20%] left-[45%] w-32 h-32 rounded-full bg-accent/15 blur-[60px]" />
+        <div className="hero-orb absolute top-[-10%] right-[-5%] w-[48vw] h-[48vw] rounded-full bg-accent/10 blur-[70px] will-change-transform" />
+        <div className="hero-orb-alt absolute bottom-[-12%] left-[-6%] w-[40vw] h-[40vw] rounded-full bg-ink/10 blur-[60px] will-change-transform" />
+        <div className="absolute top-[20%] left-[45%] w-32 h-32 rounded-full bg-accent/15 blur-[40px]" />
       </div>
 
       <div className="hero-content-wrapper max-w-7xl mx-auto w-full relative z-10 flex-1 flex flex-col justify-center">

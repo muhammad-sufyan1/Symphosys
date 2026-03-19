@@ -28,17 +28,18 @@ export function WhatWeDo() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const items = gsap.utils.toArray('.service-card');
-    items.forEach((item: any, i) => {
+    items.forEach((item: any) => {
       gsap.from(item, {
         scrollTrigger: {
           trigger: item,
           start: 'top 85%',
-          end: 'top 60%',
-          scrub: 1,
+          toggleActions: 'play none none none',
         },
         y: 40,
         opacity: 0,
         scale: 0.96,
+        duration: 0.7,
+        ease: 'power3.out',
         transformOrigin: "center center",
       });
     });

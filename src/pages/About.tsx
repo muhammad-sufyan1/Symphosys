@@ -107,7 +107,7 @@ export function About() {
               alt="Our Team"
               width={1200}
               height={800}
-              className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-luminosity"
+              className="absolute inset-0 w-full h-full object-cover opacity-80"
               referrerPolicy="no-referrer"
               loading="lazy"
               decoding="async"

@@ -32,18 +32,6 @@ export function Process() {
       });
     });
 
-    gsap.to('.process-num', {
-      scrollTrigger: {
-        trigger: container.current,
-        start: 'top bottom',
-        end: 'bottom top',
-        scrub: 1
-      },
-      y: -80,
-      scale: 1.2,
-      opacity: 0.4,
-      ease: 'none'
-    });
   }, { scope: container });
 
   return (

@@ -24,12 +24,11 @@ export function WhyUs() {
           trigger: card,
           start: 'top 85%',
         },
-        y: 100,
+        y: 60,
         opacity: 0,
-        filter: 'blur(10px)',
-        scale: 0.9,
-        duration: 1.2,
-        ease: 'expo.out'
+        scale: 0.95,
+        duration: 0.8,
+        ease: 'power3.out'
       });
     });
   }, { scope: container });
